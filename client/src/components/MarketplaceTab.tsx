@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { User, SkillItem } from '../types';
-import { Search, Star, ShieldCheck, Clock, ArrowRight, UserPlus, Filter } from 'lucide-react';
+import { User, SkillItem, AvailabilitySlot, Review } from '../types';
+import { Search, Star, ShieldCheck, Clock, ArrowRight, UserPlus, Filter, Calendar, MessageSquare } from 'lucide-react';
 
 interface MarketplaceTabProps {
   currentUser: User;
@@ -33,6 +33,8 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
   const [bookingNotes, setBookingNotes] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [targetAvailability, setTargetAvailability] = useState<AvailabilitySlot[]>([]);
+  const [targetReviews, setTargetReviews] = useState<Review[]>([]);
 
   // Flatten all offered skills
   const otherUsers = allUsers.filter((u) => u.id !== currentUser.id && u.role !== 'admin');
@@ -58,14 +60,31 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
     return matchesSearch && matchesCategory && matchesRating;
   });
 
-  const handleOpenBooking = (user: User, skill: SkillItem) => {
+  const handleOpenBooking = async (user: User, skill: SkillItem) => {
     setTargetHelper(user);
     setTargetSkill(skill);
     setErrorMsg(null);
+    setTargetAvailability([]);
+    setTargetReviews([]);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     setBookingDate(tomorrow.toISOString().split('T')[0]);
-    setBookingNotes(`Hi ${user.name}, I would love 30 minutes of your time on ${skill.name}.`);
+    setBookingNotes(`Hi ${user.name}, I would love ${duration} minutes of your time on ${skill.name}.`);
+
+    try {
+      const [availRes, revRes] = await Promise.all([
+        fetch(`/api/availability/${user.id}`),
+        fetch(`/api/reviews/${user.id}`),
+      ]);
+      if (availRes.ok) {
+        setTargetAvailability(await availRes.json());
+      }
+      if (revRes.ok) {
+        setTargetReviews(await revRes.json());
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
@@ -235,6 +254,52 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
             <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300 leading-relaxed">
               <span className="font-bold">🔒 Escrow Guarantee:</span> {duration} time credits will be held in escrow. They are credited to {targetHelper.name} only after you both complete and sign off.
             </div>
+
+            {/* Tutor Availability Schedule */}
+            {targetAvailability.length > 0 && (
+              <div className="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs space-y-1.5">
+                <span className="font-bold text-slate-300 flex items-center space-x-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{targetHelper.name}'s Recurring Available Hours:</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {targetAvailability.map((slot) => {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    return (
+                      <span
+                        key={slot.id}
+                        className="px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-700 text-[11px] font-mono"
+                      >
+                        {days[slot.dayOfWeek]} {slot.startTime}–{slot.endTime}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Tutor Reviews Preview */}
+            {targetReviews.length > 0 && (
+              <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/60 text-xs space-y-1.5">
+                <span className="font-bold text-slate-300 flex items-center space-x-1.5">
+                  <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
+                  <span>Recent Peer Reviews ({targetReviews.length}):</span>
+                </span>
+                <div className="space-y-1.5 pt-1 max-h-24 overflow-y-auto pr-1">
+                  {targetReviews.slice(0, 2).map((rev) => (
+                    <div key={rev.id} className="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-[11px]">
+                      <div className="flex items-center justify-between text-yellow-400 font-bold mb-0.5">
+                        <span>★ {rev.rating}.0 / 5.0</span>
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          {new Date(rev.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-slate-300 italic truncate">"{rev.comment}"</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {errorMsg && (
               <div className="p-3 rounded-lg bg-red-950/40 border border-red-500/30 text-red-300 text-xs">

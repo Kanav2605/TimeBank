@@ -13,8 +13,20 @@ export class DisputeEngine {
     evidenceNotes: string,
     actualMinutesAttended: number
   ): Dispute {
-    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') {
-      // In TimeBank, completed sessions can be disputed within 24h review window
+    if (raisedByUserId !== booking.requesterId && raisedByUserId !== booking.helperId) {
+      throw new Error('Only participants of this session can file a dispute.');
+    }
+
+    if (booking.status === 'CANCELLED') {
+      throw new Error('Cannot dispute a session that has already been cancelled.');
+    }
+
+    if (booking.status === 'DISPUTED') {
+      throw new Error('A dispute has already been filed for this session.');
+    }
+
+    if (booking.status === 'COMPLETED') {
+      throw new Error('Cannot dispute a session that has already completed and settled.');
     }
 
     const againstUserId =
@@ -112,7 +124,15 @@ export class DisputeEngine {
       }
 
       case 'DISMISSED': {
-        // Dismissed with no changes or returned to normal
+        // Dispute dismissed without penalties; refund escrow back to requester
+        dispute.refundedAmount = creditAmount;
+        dispute.paidAmount = 0;
+        ledger.refundEscrow(
+          requester,
+          creditAmount,
+          booking.id,
+          `Dispute Dismissed: ${resolutionNotes}`
+        );
         booking.status = 'CANCELLED';
         break;
       }

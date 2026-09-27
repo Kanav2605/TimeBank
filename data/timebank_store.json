@@ -9,9 +9,9 @@
       "university": "State University of Tech",
       "major": "Computer Science",
       "credits": {
-        "availableBalance": 90,
-        "escrowBalance": 30,
-        "totalEarned": 60,
+        "availableBalance": 60,
+        "escrowBalance": 0,
+        "totalEarned": 0,
         "totalSpent": 0
       },
       "skillsOffered": [
@@ -42,11 +42,11 @@
         }
       ],
       "reliabilityScore": 98,
-      "rating": 4.9,
-      "reviewCount": 16,
-      "completedSessions": 8,
+      "rating": 5,
+      "reviewCount": 0,
+      "completedSessions": 0,
       "disputeCount": 0,
-      "joinedAt": "2026-08-28T16:22:47.129Z",
+      "joinedAt": "2026-08-28T16:39:30.619Z",
       "role": "student"
     },
     {
@@ -58,10 +58,10 @@
       "university": "National Arts & Science College",
       "major": "Linguistics & English",
       "credits": {
-        "availableBalance": 120,
+        "availableBalance": 90,
         "escrowBalance": 0,
-        "totalEarned": 120,
-        "totalSpent": 45
+        "totalEarned": 30,
+        "totalSpent": 0
       },
       "skillsOffered": [
         {
@@ -88,14 +88,21 @@
           "category": "Tech",
           "proficiency": "Beginner",
           "description": "Need help understanding object inheritance and Collections framework for CS101."
+        },
+        {
+          "id": "sk_6b",
+          "name": "Python & Machine Learning",
+          "category": "Tech",
+          "proficiency": "Beginner",
+          "description": "Need help learning Python data analysis for computational linguistics."
         }
       ],
       "reliabilityScore": 100,
       "rating": 5,
-      "reviewCount": 24,
-      "completedSessions": 12,
+      "reviewCount": 1,
+      "completedSessions": 1,
       "disputeCount": 0,
-      "joinedAt": "2026-08-13T16:22:47.129Z",
+      "joinedAt": "2026-08-13T16:39:30.619Z",
       "role": "student"
     },
     {
@@ -109,8 +116,8 @@
       "credits": {
         "availableBalance": 0,
         "escrowBalance": 30,
-        "totalEarned": 60,
-        "totalSpent": 60
+        "totalEarned": 0,
+        "totalSpent": 30
       },
       "skillsOffered": [
         {
@@ -132,11 +139,11 @@
         }
       ],
       "reliabilityScore": 94,
-      "rating": 4.8,
-      "reviewCount": 10,
-      "completedSessions": 5,
+      "rating": 5,
+      "reviewCount": 0,
+      "completedSessions": 1,
       "disputeCount": 0,
-      "joinedAt": "2026-09-07T16:22:47.129Z",
+      "joinedAt": "2026-09-07T16:39:30.619Z",
       "role": "student"
     },
     {
@@ -148,10 +155,10 @@
       "university": "Design Academy",
       "major": "Interaction Design",
       "credits": {
-        "availableBalance": 180,
-        "escrowBalance": 0,
-        "totalEarned": 120,
-        "totalSpent": 30
+        "availableBalance": 30,
+        "escrowBalance": 30,
+        "totalEarned": 0,
+        "totalSpent": 0
       },
       "skillsOffered": [
         {
@@ -173,11 +180,11 @@
         }
       ],
       "reliabilityScore": 97,
-      "rating": 4.9,
-      "reviewCount": 19,
-      "completedSessions": 9,
+      "rating": 5,
+      "reviewCount": 0,
+      "completedSessions": 0,
       "disputeCount": 0,
-      "joinedAt": "2026-07-29T16:22:47.129Z",
+      "joinedAt": "2026-07-29T16:39:30.619Z",
       "role": "student"
     },
     {
@@ -189,9 +196,9 @@
       "university": "State University of Tech",
       "major": "Software Engineering",
       "credits": {
-        "availableBalance": 80,
+        "availableBalance": 60,
         "escrowBalance": 0,
-        "totalEarned": 40,
+        "totalEarned": 0,
         "totalSpent": 0
       },
       "skillsOffered": [
@@ -222,11 +229,11 @@
         }
       ],
       "reliabilityScore": 96,
-      "rating": 4.9,
-      "reviewCount": 8,
-      "completedSessions": 4,
+      "rating": 5,
+      "reviewCount": 0,
+      "completedSessions": 0,
       "disputeCount": 0,
-      "joinedAt": "2026-09-12T16:22:47.129Z",
+      "joinedAt": "2026-09-12T16:39:30.619Z",
       "role": "student"
     },
     {
@@ -236,7 +243,7 @@
       "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
       "bio": "TimeBank community mediator and transaction ledger auditor.",
       "credits": {
-        "availableBalance": 1000,
+        "availableBalance": 0,
         "escrowBalance": 0,
         "totalEarned": 0,
         "totalSpent": 0
@@ -248,7 +255,7 @@
       "reviewCount": 0,
       "completedSessions": 0,
       "disputeCount": 0,
-      "joinedAt": "2026-06-19T16:22:47.129Z",
+      "joinedAt": "2026-06-19T16:39:30.619Z",
       "role": "admin"
     }
   ],
@@ -358,7 +365,7 @@
       "skillName": "Resume Review",
       "skillCategory": "Career",
       "description": "Review my data scientist resume bullet points and fix grammar.",
-      "scheduledAt": "2026-09-25T16:22:47.130Z",
+      "scheduledAt": "2026-09-25T16:39:30.619Z",
       "durationMinutes": 30,
       "creditAmount": 30,
       "status": "COMPLETED",
@@ -370,8 +377,8 @@
       ],
       "requesterSignedOff": true,
       "helperSignedOff": true,
-      "createdAt": "2026-09-24T16:22:47.130Z",
-      "completedAt": "2026-09-25T17:22:47.130Z"
+      "createdAt": "2026-09-24T16:39:30.619Z",
+      "completedAt": "2026-09-25T17:39:30.619Z"
     },
     {
       "id": "bk_sample_2",
@@ -380,25 +387,25 @@
       "skillName": "PPT Design",
       "skillCategory": "Design",
       "description": "Help formatting my machine learning capstone pitch presentation.",
-      "scheduledAt": "2026-09-28T16:22:47.130Z",
+      "scheduledAt": "2026-09-28T16:39:30.619Z",
       "durationMinutes": 30,
       "creditAmount": 30,
       "status": "CONFIRMED",
       "topicsChecked": [],
-      "createdAt": "2026-09-27T16:22:47.130Z"
+      "createdAt": "2026-09-27T16:39:30.619Z"
     },
     {
       "id": "bk_sample_disputed",
-      "requesterId": "usr_aryan",
+      "requesterId": "usr_elena",
       "helperId": "usr_kenji",
       "skillName": "Japanese Language",
       "skillCategory": "Languages",
       "description": "Beginner Hiragana & Travel Japanese pronunciation.",
-      "scheduledAt": "2026-09-27T11:22:47.130Z",
+      "scheduledAt": "2026-09-27T11:39:30.619Z",
       "durationMinutes": 30,
       "creditAmount": 30,
       "status": "DISPUTED",
-      "createdAt": "2026-09-26T16:22:47.130Z",
+      "createdAt": "2026-09-26T16:39:30.619Z",
       "disputeId": "disp_sample_1"
     }
   ],
@@ -406,14 +413,14 @@
     {
       "id": "disp_sample_1",
       "sessionId": "bk_sample_disputed",
-      "raisedByUserId": "usr_aryan",
+      "raisedByUserId": "usr_elena",
       "againstUserId": "usr_kenji",
       "reason": "TECHNICAL_ISSUES",
       "description": "Audio dropped out completely 10 minutes in and helper was unable to reconnect.",
       "evidenceNotes": "Tried reconnecting for 15 minutes, chat logs indicate persistent microphone failure.",
       "actualMinutesAttended": 10,
       "status": "OPEN",
-      "createdAt": "2026-09-27T12:22:47.130Z"
+      "createdAt": "2026-09-27T12:39:30.619Z"
     }
   ],
   "reviews": [
@@ -426,133 +433,133 @@
       "punctualityRating": 5,
       "helpfulnessRating": 5,
       "comment": "Priya transformed my resume in exactly 30 minutes! Highly professional and articulate.",
-      "createdAt": "2026-09-25T18:22:47.130Z"
+      "createdAt": "2026-09-25T18:39:30.619Z"
     }
   ],
   "ledgerChain": [
     {
       "id": "tx_genesis",
       "index": 0,
-      "timestamp": "2026-09-27T16:22:47.122Z",
+      "timestamp": "2026-09-27T16:39:30.616Z",
       "fromUserId": "SYSTEM",
       "toUserId": "GENESIS",
       "amount": 0,
       "type": "SIGNUP_GRANT",
       "reason": "TimeBank Genesis Block: Time is the universal currency of learning",
       "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
-      "hash": "eab6af2b158107c7926e9cfcf516484e9066fd2c2540e1119bad395d5a089056"
+      "hash": "a8e11f7972a383375f39e0ebce9adf0ab59c9bb43e70385a999c540f669d5b40"
     },
     {
-      "id": "tx_1790526167129_xitb5yq",
+      "id": "tx_1790527170619_i91lpju",
       "index": 1,
-      "timestamp": "2026-09-27T16:22:47.129Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "SYSTEM",
       "toUserId": "usr_aryan",
       "amount": 60,
       "type": "SIGNUP_GRANT",
       "reason": "Welcome to TimeBank: 60 min starter time credits granted to Aryan Sharma",
-      "previousHash": "eab6af2b158107c7926e9cfcf516484e9066fd2c2540e1119bad395d5a089056",
-      "hash": "d28978f7f54d55d78c598f30efd5f5a66d963372762c133682418faa126b5773"
+      "previousHash": "a8e11f7972a383375f39e0ebce9adf0ab59c9bb43e70385a999c540f669d5b40",
+      "hash": "6883aaa4fa5892eac945ad2f9525d0d2e18ebedb2dd563c54da448b864daa34b"
     },
     {
-      "id": "tx_1790526167129_3h69k11",
+      "id": "tx_1790527170619_unxajlh",
       "index": 2,
-      "timestamp": "2026-09-27T16:22:47.129Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "SYSTEM",
       "toUserId": "usr_priya",
-      "amount": 45,
+      "amount": 60,
       "type": "SIGNUP_GRANT",
-      "reason": "Welcome to TimeBank: 45 min starter time credits granted to Priya Patel",
-      "previousHash": "d28978f7f54d55d78c598f30efd5f5a66d963372762c133682418faa126b5773",
-      "hash": "c6b19666554f7151ff1e5c3985cc81303ba2d7600231a996ce364cf2e8c67002"
+      "reason": "Welcome to TimeBank: 60 min starter time credits granted to Priya Patel",
+      "previousHash": "6883aaa4fa5892eac945ad2f9525d0d2e18ebedb2dd563c54da448b864daa34b",
+      "hash": "89072a9dabab5907ba3d013adaeca5f92eadd86f2afc265aa00563aa3c07ba22"
     },
     {
-      "id": "tx_1790526167129_fiblmuj",
+      "id": "tx_1790527170619_w0ga46m",
       "index": 3,
-      "timestamp": "2026-09-27T16:22:47.129Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "SYSTEM",
       "toUserId": "usr_marcus",
-      "amount": 30,
+      "amount": 60,
       "type": "SIGNUP_GRANT",
-      "reason": "Welcome to TimeBank: 30 min starter time credits granted to Marcus Chen",
-      "previousHash": "c6b19666554f7151ff1e5c3985cc81303ba2d7600231a996ce364cf2e8c67002",
-      "hash": "237c6a549823fd1f54e0460111235795797484af783db07eb9a8c49a50b9efc5"
+      "reason": "Welcome to TimeBank: 60 min starter time credits granted to Marcus Chen",
+      "previousHash": "89072a9dabab5907ba3d013adaeca5f92eadd86f2afc265aa00563aa3c07ba22",
+      "hash": "0613f0082e3003edc6e92de2fffd6fd5020b065a8decdc0fd67ace7be7e32401"
     },
     {
-      "id": "tx_1790526167129_dlfun9k",
+      "id": "tx_1790527170619_ojjv13u",
       "index": 4,
-      "timestamp": "2026-09-27T16:22:47.129Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "SYSTEM",
       "toUserId": "usr_elena",
-      "amount": 90,
+      "amount": 60,
       "type": "SIGNUP_GRANT",
-      "reason": "Welcome to TimeBank: 90 min starter time credits granted to Elena Rostova",
-      "previousHash": "237c6a549823fd1f54e0460111235795797484af783db07eb9a8c49a50b9efc5",
-      "hash": "9b79107733b945c8fe7ab485efde29fd511b9deeb8d319f11f282f98db285c47"
+      "reason": "Welcome to TimeBank: 60 min starter time credits granted to Elena Rostova",
+      "previousHash": "0613f0082e3003edc6e92de2fffd6fd5020b065a8decdc0fd67ace7be7e32401",
+      "hash": "a15f2374119384fb42d2b51e7f9b7ffccc8ef9973aa4fbe466a8c063a41aafbe"
     },
     {
-      "id": "tx_1790526167130_z4f38ap",
+      "id": "tx_1790527170619_gkdes1q",
       "index": 5,
-      "timestamp": "2026-09-27T16:22:47.130Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "SYSTEM",
       "toUserId": "usr_kenji",
-      "amount": 40,
+      "amount": 60,
       "type": "SIGNUP_GRANT",
-      "reason": "Welcome to TimeBank: 40 min starter time credits granted to Kenji Takahashi",
-      "previousHash": "9b79107733b945c8fe7ab485efde29fd511b9deeb8d319f11f282f98db285c47",
-      "hash": "9c51a3c82d1709ae4c31dd768c9765aade7a52b16dda370634b492586ede999d"
+      "reason": "Welcome to TimeBank: 60 min starter time credits granted to Kenji Takahashi",
+      "previousHash": "a15f2374119384fb42d2b51e7f9b7ffccc8ef9973aa4fbe466a8c063a41aafbe",
+      "hash": "de4a241418f38c447134855c240925a1d6081caf529be48ccd3367abea04f4c9"
     },
     {
-      "id": "tx_1790526167130_13of4fc",
+      "id": "tx_1790527170619_4tngtr1",
       "index": 6,
-      "timestamp": "2026-09-27T16:22:47.130Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "usr_marcus",
       "toUserId": "ESCROW",
       "amount": 30,
       "type": "ESCROW_LOCK",
       "sessionId": "bk_sample_1",
       "reason": "Escrow hold for 30 min session: \"Resume Review\"",
-      "previousHash": "9c51a3c82d1709ae4c31dd768c9765aade7a52b16dda370634b492586ede999d",
-      "hash": "47064ada11080fa63b75d25f82a3c870a8b97c837f91c9f2dec222c3454f59ca"
+      "previousHash": "de4a241418f38c447134855c240925a1d6081caf529be48ccd3367abea04f4c9",
+      "hash": "857816dbb18b52535365b748ee85f3520c133f45058a4ee0b29250ec33f7f8d3"
     },
     {
-      "id": "tx_1790526167130_vftfu3x",
+      "id": "tx_1790527170619_i24qvut",
       "index": 7,
-      "timestamp": "2026-09-27T16:22:47.130Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "ESCROW",
       "toUserId": "usr_priya",
       "amount": 30,
       "type": "ESCROW_RELEASE",
       "sessionId": "bk_sample_1",
       "reason": "Credits earned for completing 30 min session: \"Resume Review\"",
-      "previousHash": "47064ada11080fa63b75d25f82a3c870a8b97c837f91c9f2dec222c3454f59ca",
-      "hash": "eb821e797be3286280883935a5902199b233c4cf0906263302eacb1d19a5cd17"
+      "previousHash": "857816dbb18b52535365b748ee85f3520c133f45058a4ee0b29250ec33f7f8d3",
+      "hash": "5afbae0fb1efcfb8464abb5c7481e8136cd950c98be55618fc75c7d30902be89"
     },
     {
-      "id": "tx_1790526167130_ptnrzy4",
+      "id": "tx_1790527170619_ebfkz8v",
       "index": 8,
-      "timestamp": "2026-09-27T16:22:47.130Z",
+      "timestamp": "2026-09-27T16:39:30.619Z",
       "fromUserId": "usr_marcus",
       "toUserId": "ESCROW",
       "amount": 30,
       "type": "ESCROW_LOCK",
       "sessionId": "bk_sample_2",
       "reason": "Escrow hold for 30 min session: \"PPT Design\"",
-      "previousHash": "eb821e797be3286280883935a5902199b233c4cf0906263302eacb1d19a5cd17",
-      "hash": "487362422a663d3a14246f33eb36a22c857ae574f7f6d7c0ef5057fde16f8312"
+      "previousHash": "5afbae0fb1efcfb8464abb5c7481e8136cd950c98be55618fc75c7d30902be89",
+      "hash": "00a0a86d877412f7aab048ebe35b6b92f76bc770f0c752556f78def10199a8ea"
     },
     {
-      "id": "tx_1790526167130_kybkes8",
+      "id": "tx_1790527170619_87tuzwd",
       "index": 9,
-      "timestamp": "2026-09-27T16:22:47.130Z",
-      "fromUserId": "usr_aryan",
+      "timestamp": "2026-09-27T16:39:30.619Z",
+      "fromUserId": "usr_elena",
       "toUserId": "ESCROW",
       "amount": 30,
       "type": "ESCROW_LOCK",
       "sessionId": "bk_sample_disputed",
       "reason": "Escrow hold for 30 min session: \"Japanese Language\"",
-      "previousHash": "487362422a663d3a14246f33eb36a22c857ae574f7f6d7c0ef5057fde16f8312",
-      "hash": "08c36973759e993e2b7cdcd2b6896902bbecc4df9a8e716753293b494e8f4b7c"
+      "previousHash": "00a0a86d877412f7aab048ebe35b6b92f76bc770f0c752556f78def10199a8ea",
+      "hash": "017ee52707ec1c0051e0d06979fdeb2aa5fa9f995fd1696c04854a27bdb94355"
     }
   ]
 }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, SessionBooking, SkillItem } from '../types';
+import React, { useState, useEffect } from 'react';
+import { User, SessionBooking, SkillItem, AvailabilitySlot } from '../types';
 import {
   Clock,
   Award,
@@ -13,6 +13,7 @@ import {
   Briefcase,
   HelpCircle,
   TrendingUp,
+  Trash2,
 } from 'lucide-react';
 
 interface DashboardTabProps {
@@ -35,6 +36,62 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   const [newSkillCategory, setNewSkillCategory] = useState<'Tech' | 'Design' | 'Academics' | 'Languages' | 'Career'>('Tech');
   const [newSkillProficiency, setNewSkillProficiency] = useState<'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'>('Intermediate');
   const [newSkillDesc, setNewSkillDesc] = useState('');
+
+  const [myAvailability, setMyAvailability] = useState<AvailabilitySlot[]>([]);
+  const [showAddAvail, setShowAddAvail] = useState(false);
+  const [availDay, setAvailDay] = useState<number>(1);
+  const [availStart, setAvailStart] = useState('14:00');
+  const [availEnd, setAvailEnd] = useState('17:00');
+
+  useEffect(() => {
+    fetchMyAvailability();
+  }, [currentUser.id]);
+
+  const fetchMyAvailability = async () => {
+    try {
+      const res = await fetch(`/api/availability/${currentUser.id}`);
+      if (res.ok) {
+        const slots = await res.json();
+        setMyAvailability(slots);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          dayOfWeek: Number(availDay),
+          startTime: availStart,
+          endTime: availEnd,
+          isRecurring: true,
+        }),
+      });
+      if (res.ok) {
+        setShowAddAvail(false);
+        fetchMyAvailability();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSlot = async (slotId: string) => {
+    try {
+      const res = await fetch(`/api/availability/${slotId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMyAvailability((prev) => prev.filter((s) => s.id !== slotId));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const myUpcomingBookings = bookings.filter(
     (b) =>
@@ -374,6 +431,133 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Weekly Availability Schedule */}
+      <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">My Weekly Availability Schedule</h2>
+              <p className="text-xs text-slate-400">
+                When you're free for peer tutoring sessions. Matches automatically check this for time overlap!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowAddAvail(true)}
+            className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center space-x-1.5 self-start sm:self-auto transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Availability Slot</span>
+          </button>
+        </div>
+
+        {myAvailability.length === 0 ? (
+          <div className="p-6 rounded-xl bg-slate-900/40 border border-slate-800 text-center text-slate-400 text-xs">
+            No availability slots added yet. Add regular study hours so peers can book tutoring sessions with you!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {myAvailability.map((slot) => {
+              const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+              return (
+                <div
+                  key={slot.id}
+                  className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-700/60 flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold font-mono">
+                      {dayNames[slot.dayOfWeek]}
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-white block">
+                        {slot.startTime} – {slot.endTime}
+                      </span>
+                      <span className="text-[10px] text-slate-500">Weekly recurring</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteSlot(slot.id)}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Remove slot"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Modal for adding availability slot */}
+      {showAddAvail && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-slate-900 rounded-2xl border border-slate-700 p-6 shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold text-white">Add Available Time Slot</h3>
+            <form onSubmit={handleAddSlot} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Day of the Week</label>
+                <select
+                  value={availDay}
+                  onChange={(e) => setAvailDay(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                >
+                  <option value={1}>Monday</option>
+                  <option value={2}>Tuesday</option>
+                  <option value={3}>Wednesday</option>
+                  <option value={4}>Thursday</option>
+                  <option value={5}>Friday</option>
+                  <option value={6}>Saturday</option>
+                  <option value={0}>Sunday</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={availStart}
+                    onChange={(e) => setAvailStart(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    value={availEnd}
+                    onChange={(e) => setAvailEnd(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddAvail(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs"
+                >
+                  Add Slot
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal for adding skill */}
       {showAddModal && (

@@ -114,22 +114,26 @@ app.get('/api/ledger', (req: Request, res: Response) => {
     }
   }
 
+  const genesisHash = entries[0]?.hash;
+  const latestHash = entries[entries.length - 1]?.hash;
+  const latestFirst = [...entries].reverse();
+
   res.json({
-    chain: entries.reverse(), // latest first
+    chain: latestFirst, // latest first without mutating the original chain
     integrity,
     metrics: {
       totalMintedMinutes: totalMinted,
       totalActiveEscrowMinutes: totalInEscrow,
       totalTransactionsCount: entries.length,
-      genesisHash: entries[0]?.hash,
-      latestHash: entries[entries.length - 1]?.hash,
+      genesisHash,
+      latestHash,
     },
   });
 });
 
 app.get('/api/ledger/user/:id', (req: Request, res: Response) => {
   const entries = storage.ledger.getEntriesForUser(req.params.id);
-  res.json(entries.reverse());
+  res.json([...entries].reverse());
 });
 
 // ==========================================
@@ -186,6 +190,14 @@ app.post('/api/availability', (req: Request, res: Response) => {
   storage.availability.push(slot);
   storage.persist();
   res.status(201).json(slot);
+});
+
+app.delete('/api/availability/:id', (req: Request, res: Response) => {
+  const removed = storage.removeAvailability(req.params.id);
+  if (!removed) {
+    return res.status(404).json({ error: 'Availability slot not found' });
+  }
+  res.json({ success: true, message: 'Availability slot removed' });
 });
 
 // ==========================================
@@ -471,9 +483,18 @@ app.post('/api/disputes/:id/resolve', (req: Request, res: Response) => {
 // 8. Reputation & Reviews
 // ==========================================
 
+app.get('/api/reviews', (req: Request, res: Response) => {
+  const { sessionId, reviewerId, revieweeId } = req.query;
+  let list = [...storage.reviews];
+  if (sessionId) list = list.filter((r) => r.sessionId === sessionId);
+  if (reviewerId) list = list.filter((r) => r.reviewerId === reviewerId);
+  if (revieweeId) list = list.filter((r) => r.revieweeId === revieweeId);
+  res.json(list.reverse());
+});
+
 app.get('/api/reviews/:userId', (req: Request, res: Response) => {
   const userReviews = storage.reviews.filter((r) => r.revieweeId === req.params.userId);
-  res.json(userReviews.reverse());
+  res.json([...userReviews].reverse());
 });
 
 app.post('/api/reviews', (req: Request, res: Response) => {

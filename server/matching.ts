@@ -38,17 +38,31 @@ export class MatchingEngine {
 
     // 2. Direct bilateral exchange check (does helper need something learner offers?)
     let isDirectExchange = false;
-    const bilateralMatch = helper.skillsNeeded.find((hn) =>
-      learner.skillsOffered.some((lo) =>
+    let bilateralMatchName: string | undefined;
+    for (const hn of helper.skillsNeeded) {
+      const match = learner.skillsOffered.find((lo) =>
         lo.name.toLowerCase().trim() === hn.name.toLowerCase().trim() ||
-        lo.category === hn.category
-      )
-    );
+        lo.name.toLowerCase().includes(hn.name.toLowerCase()) ||
+        hn.name.toLowerCase().includes(lo.name.toLowerCase())
+      );
+      if (match) {
+        bilateralMatchName = match.name;
+        break;
+      }
+    }
 
-    if (bilateralMatch) {
+    if (bilateralMatchName) {
       isDirectExchange = true;
       score += 20;
-      reasons.push(`Direct bilateral trade: ${helper.name} wants ${bilateralMatch.name}, which you offer!`);
+      reasons.push(`Direct bilateral trade: ${helper.name} wants ${bilateralMatchName}, which you offer!`);
+    } else {
+      const catMatch = helper.skillsNeeded.some((hn) =>
+        learner.skillsOffered.some((lo) => lo.category === hn.category)
+      );
+      if (catMatch) {
+        score += 8;
+        reasons.push(`Mutual interest in complementary domains`);
+      }
     }
 
     // 3. Reliability & Rating bonus
@@ -173,21 +187,40 @@ export class MatchingEngine {
         if (u1.id === u2.id) continue;
         // Does u1 offer something u2 needs?
         const u1GivesToU2 = u1.skillsOffered.find((o) =>
-          u2.skillsNeeded.some((n) => n.name.toLowerCase() === o.name.toLowerCase())
+          u2.skillsNeeded.some(
+            (n) =>
+              n.name.toLowerCase().trim() === o.name.toLowerCase().trim() ||
+              o.name.toLowerCase().includes(n.name.toLowerCase()) ||
+              n.name.toLowerCase().includes(o.name.toLowerCase())
+          )
         );
         if (!u1GivesToU2) continue;
 
         for (const u3 of users) {
           if (u3.id === u1.id || u3.id === u2.id) continue;
+
+          // Deduplicate: each unique cycle is anchored at its lexicographically smallest user ID
+          if (u1.id > u2.id || u1.id > u3.id) continue;
+
           // Does u2 offer something u3 needs?
           const u2GivesToU3 = u2.skillsOffered.find((o) =>
-            u3.skillsNeeded.some((n) => n.name.toLowerCase() === o.name.toLowerCase())
+            u3.skillsNeeded.some(
+              (n) =>
+                n.name.toLowerCase().trim() === o.name.toLowerCase().trim() ||
+                o.name.toLowerCase().includes(n.name.toLowerCase()) ||
+                n.name.toLowerCase().includes(o.name.toLowerCase())
+            )
           );
           if (!u2GivesToU3) continue;
 
           // Does u3 offer something u1 needs?
           const u3GivesToU1 = u3.skillsOffered.find((o) =>
-            u1.skillsNeeded.some((n) => n.name.toLowerCase() === o.name.toLowerCase())
+            u1.skillsNeeded.some(
+              (n) =>
+                n.name.toLowerCase().trim() === o.name.toLowerCase().trim() ||
+                o.name.toLowerCase().includes(n.name.toLowerCase()) ||
+                n.name.toLowerCase().includes(o.name.toLowerCase())
+            )
           );
           if (!u3GivesToU1) continue;
 

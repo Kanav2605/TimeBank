@@ -13,6 +13,7 @@ import {
   Calendar,
   Shield,
   ArrowRight,
+  Star,
 } from 'lucide-react';
 
 interface SessionsTabProps {
@@ -55,10 +56,40 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
   const [actualMinutes, setActualMinutes] = useState(10);
   const [disputeLoading, setDisputeLoading] = useState(false);
 
+  // Review Modal State
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewPunctuality, setReviewPunctuality] = useState(5);
+  const [reviewHelpfulness, setReviewHelpfulness] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+
   // Filter bookings involving currentUser
   const myBookings = bookings.filter(
     (b) => b.requesterId === currentUser.id || b.helperId === currentUser.id
   );
+
+  const playSessionChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.0);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 1.0);
+    } catch {
+      // Audio playback fallback
+    }
+  };
 
   useEffect(() => {
     let interval: any = null;
@@ -68,6 +99,7 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
       }, 1000);
     } else if (timerSeconds === 0) {
       setIsTimerRunning(false);
+      playSessionChime();
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, timerSeconds]);
@@ -120,11 +152,46 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
       if (res.ok) {
         const updated = await res.json();
         setSelectedBooking(updated);
+        playSessionChime();
         onRefreshBookings();
         onRefreshUser();
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBooking) return;
+    const revieweeId =
+      selectedBooking.requesterId === currentUser.id
+        ? selectedBooking.helperId
+        : selectedBooking.requesterId;
+    setReviewSubmitting(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: selectedBooking.id,
+          reviewerId: currentUser.id,
+          revieweeId,
+          rating: reviewRating,
+          punctualityRating: reviewPunctuality,
+          helpfulnessRating: reviewHelpfulness,
+          comment: reviewComment.trim(),
+        }),
+      });
+      if (res.ok) {
+        setShowReviewModal(false);
+        setHasReviewed(true);
+        onRefreshUser();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -463,9 +530,18 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
                 </div>
 
                 {selectedBooking.status === 'COMPLETED' ? (
-                  <span className="px-4 py-2 rounded-xl bg-blue-500/20 text-blue-400 font-bold text-xs border border-blue-500/30">
-                    Session Finished & Settled
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-4 py-2 rounded-xl bg-blue-500/20 text-blue-400 font-bold text-xs border border-blue-500/30">
+                      Session Settled
+                    </span>
+                    <button
+                      onClick={() => setShowReviewModal(true)}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center space-x-1.5 shadow-md transition-colors"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      <span>{hasReviewed ? 'Update Review' : 'Rate & Review Peer'}</span>
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={handleSignOff}
@@ -636,6 +712,117 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
                   className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs"
                 >
                   {disputeLoading ? 'Filing...' : 'Submit to Mediation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Review & Rating Modal */}
+      {showReviewModal && selectedBooking && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-700 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center space-x-2 text-amber-400">
+              <Star className="w-5 h-5 fill-current" />
+              <h3 className="text-lg font-bold text-white">Rate & Review Peer</h3>
+            </div>
+            <p className="text-xs text-slate-400">
+              Your feedback builds trust on campus and updates your peer's public reputation score.
+            </p>
+
+            <form onSubmit={handleReviewSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Overall Rating (1–5 Stars)
+                </label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 text-2xl transition-transform hover:scale-125 focus:outline-none"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= reviewRating
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-slate-600'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-yellow-400 ml-2">
+                    {reviewRating}.0 / 5.0
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Punctuality Rating
+                  </label>
+                  <select
+                    value={reviewPunctuality}
+                    onChange={(e) => setReviewPunctuality(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value={5}>5 - On Time</option>
+                    <option value={4}>4 - Slightly Late (5m)</option>
+                    <option value={3}>3 - Late (10m+)</option>
+                    <option value={2}>2 - Very Late</option>
+                    <option value={1}>1 - No Show</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Helpfulness
+                  </label>
+                  <select
+                    value={reviewHelpfulness}
+                    onChange={(e) => setReviewHelpfulness(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    <option value={5}>5 - Exceptional</option>
+                    <option value={4}>4 - Very Helpful</option>
+                    <option value={3}>3 - Average</option>
+                    <option value={2}>2 - Below Average</option>
+                    <option value={1}>1 - Unhelpful</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Public Feedback / Testimonial
+                </label>
+                <textarea
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Share how this student helped you or how they engaged during the session..."
+                  className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reviewSubmitting}
+                  className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md"
+                >
+                  {reviewSubmitting ? 'Submitting...' : 'Post Review'}
                 </button>
               </div>
             </form>

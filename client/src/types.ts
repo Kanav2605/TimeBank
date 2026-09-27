@@ -143,3 +143,15 @@ export interface CircularTradeCycle {
   cycle: Array<{ giver: string; receiver: string; skill: string }>;
   description: string;
 }
+
+export interface Review {
+  id: string;
+  sessionId: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  punctualityRating: number;
+  helpfulnessRating: number;
+  comment: string;
+  createdAt: string;
+}

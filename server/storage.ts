@@ -62,19 +62,51 @@ export class TimeBankStorage {
     this.persist();
   }
 
-  public persist(): void {
-    const data: StorageData = {
-      users: Array.from(this.users.values()),
-      availability: this.availability,
-      bookings: Array.from(this.bookings.values()),
-      disputes: Array.from(this.disputes.values()),
-      reviews: this.reviews,
-      ledgerChain: this.ledger.getEntries(),
-    };
+  private isPersisting = false;
+  private pendingPersist = false;
 
-    const tempFile = `${this.dataFilePath}.tmp`;
-    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf-8');
-    fs.renameSync(tempFile, this.dataFilePath);
+  public removeAvailability(id: string): boolean {
+    const idx = this.availability.findIndex((s) => s.id === id);
+    if (idx !== -1) {
+      this.availability.splice(idx, 1);
+      this.persist();
+      return true;
+    }
+    return false;
+  }
+
+  public persist(): void {
+    if (this.isPersisting) {
+      this.pendingPersist = true;
+      return;
+    }
+
+    this.isPersisting = true;
+    try {
+      do {
+        this.pendingPersist = false;
+        const data: StorageData = {
+          users: Array.from(this.users.values()),
+          availability: this.availability,
+          bookings: Array.from(this.bookings.values()),
+          disputes: Array.from(this.disputes.values()),
+          reviews: this.reviews,
+          ledgerChain: this.ledger.getEntries(),
+        };
+
+        const uniqueTmp = `${this.dataFilePath}.${process.pid}.${Date.now()}.${Math.random().toString(36).substring(2, 8)}.tmp`;
+        fs.writeFileSync(uniqueTmp, JSON.stringify(data, null, 2), 'utf-8');
+        try {
+          fs.renameSync(uniqueTmp, this.dataFilePath);
+        } catch {
+          // Fallback for Windows file locking
+          fs.copyFileSync(uniqueTmp, this.dataFilePath);
+          fs.unlinkSync(uniqueTmp);
+        }
+      } while (this.pendingPersist);
+    } finally {
+      this.isPersisting = false;
+    }
   }
 
   private seedDefaultData(): void {
@@ -88,9 +120,9 @@ export class TimeBankStorage {
       university: 'State University of Tech',
       major: 'Computer Science',
       credits: {
-        availableBalance: 60,
+        availableBalance: 0,
         escrowBalance: 0,
-        totalEarned: 60,
+        totalEarned: 0,
         totalSpent: 0,
       },
       skillsOffered: [
@@ -121,15 +153,15 @@ export class TimeBankStorage {
         },
       ],
       reliabilityScore: 98,
-      rating: 4.9,
-      reviewCount: 16,
-      completedSessions: 8,
+      rating: 5.0,
+      reviewCount: 0,
+      completedSessions: 0,
       disputeCount: 0,
       joinedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
       role: 'student',
     };
 
-    // 2. Create Priya (+45 credits, English speaking coach, wants Java)
+    // 2. Create Priya (English speaking coach, wants Java & Python)
     const priya: User = {
       id: 'usr_priya',
       name: 'Priya Patel',
@@ -139,10 +171,10 @@ export class TimeBankStorage {
       university: 'National Arts & Science College',
       major: 'Linguistics & English',
       credits: {
-        availableBalance: 45,
+        availableBalance: 0,
         escrowBalance: 0,
-        totalEarned: 90,
-        totalSpent: 45,
+        totalEarned: 0,
+        totalSpent: 0,
       },
       skillsOffered: [
         {
@@ -170,17 +202,24 @@ export class TimeBankStorage {
           proficiency: 'Beginner',
           description: 'Need help understanding object inheritance and Collections framework for CS101.',
         },
+        {
+          id: 'sk_6b',
+          name: 'Python & Machine Learning',
+          category: 'Tech',
+          proficiency: 'Beginner',
+          description: 'Need help learning Python data analysis for computational linguistics.',
+        },
       ],
       reliabilityScore: 100,
       rating: 5.0,
-      reviewCount: 24,
-      completedSessions: 12,
+      reviewCount: 1,
+      completedSessions: 1,
       disputeCount: 0,
       joinedAt: new Date(Date.now() - 45 * 86400000).toISOString(),
       role: 'student',
     };
 
-    // 3. Create Marcus (+30 credits, Python & ML, wants PPT Design)
+    // 3. Create Marcus (Python & ML, wants PPT Design)
     const marcus: User = {
       id: 'usr_marcus',
       name: 'Marcus Chen',
@@ -190,10 +229,10 @@ export class TimeBankStorage {
       university: 'State University of Tech',
       major: 'Data Science',
       credits: {
-        availableBalance: 30,
+        availableBalance: 0,
         escrowBalance: 0,
-        totalEarned: 60,
-        totalSpent: 30,
+        totalEarned: 0,
+        totalSpent: 0,
       },
       skillsOffered: [
         {
@@ -215,15 +254,15 @@ export class TimeBankStorage {
         },
       ],
       reliabilityScore: 94,
-      rating: 4.8,
-      reviewCount: 10,
-      completedSessions: 5,
+      rating: 5.0,
+      reviewCount: 0,
+      completedSessions: 1,
       disputeCount: 0,
       joinedAt: new Date(Date.now() - 20 * 86400000).toISOString(),
       role: 'student',
     };
 
-    // 4. Create Elena (+90 credits, UI/UX & Figma, wants Calculus)
+    // 4. Create Elena (UI/UX & Figma, wants Calculus)
     const elena: User = {
       id: 'usr_elena',
       name: 'Elena Rostova',
@@ -233,10 +272,10 @@ export class TimeBankStorage {
       university: 'Design Academy',
       major: 'Interaction Design',
       credits: {
-        availableBalance: 90,
+        availableBalance: 0,
         escrowBalance: 0,
-        totalEarned: 120,
-        totalSpent: 30,
+        totalEarned: 0,
+        totalSpent: 0,
       },
       skillsOffered: [
         {
@@ -258,15 +297,15 @@ export class TimeBankStorage {
         },
       ],
       reliabilityScore: 97,
-      rating: 4.9,
-      reviewCount: 19,
-      completedSessions: 9,
+      rating: 5.0,
+      reviewCount: 0,
+      completedSessions: 0,
       disputeCount: 0,
       joinedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
       role: 'student',
     };
 
-    // 5. Create Kenji (+40 credits, Japanese & Algorithms, wants Web Development)
+    // 5. Create Kenji (Japanese & Algorithms, wants Web Development)
     const kenji: User = {
       id: 'usr_kenji',
       name: 'Kenji Takahashi',
@@ -276,9 +315,9 @@ export class TimeBankStorage {
       university: 'State University of Tech',
       major: 'Software Engineering',
       credits: {
-        availableBalance: 40,
+        availableBalance: 0,
         escrowBalance: 0,
-        totalEarned: 40,
+        totalEarned: 0,
         totalSpent: 0,
       },
       skillsOffered: [
@@ -309,9 +348,9 @@ export class TimeBankStorage {
         },
       ],
       reliabilityScore: 96,
-      rating: 4.9,
-      reviewCount: 8,
-      completedSessions: 4,
+      rating: 5.0,
+      reviewCount: 0,
+      completedSessions: 0,
       disputeCount: 0,
       joinedAt: new Date(Date.now() - 15 * 86400000).toISOString(),
       role: 'student',
@@ -325,7 +364,7 @@ export class TimeBankStorage {
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       bio: 'TimeBank community mediator and transaction ledger auditor.',
       credits: {
-        availableBalance: 1000,
+        availableBalance: 0,
         escrowBalance: 0,
         totalEarned: 0,
         totalSpent: 0,
@@ -348,12 +387,12 @@ export class TimeBankStorage {
     this.users.set(kenji.id, kenji);
     this.users.set(admin.id, admin);
 
-    // Initial Ledger entries for minted time credits
+    // Initial Ledger entries for minted time credits (60 min each)
     this.ledger.grantSignupBonus(aryan, 60);
-    this.ledger.grantSignupBonus(priya, 45);
-    this.ledger.grantSignupBonus(marcus, 30);
-    this.ledger.grantSignupBonus(elena, 90);
-    this.ledger.grantSignupBonus(kenji, 40);
+    this.ledger.grantSignupBonus(priya, 60);
+    this.ledger.grantSignupBonus(marcus, 60);
+    this.ledger.grantSignupBonus(elena, 60);
+    this.ledger.grantSignupBonus(kenji, 60);
 
     // 2. Availability Slots
     this.availability = [
@@ -362,16 +401,16 @@ export class TimeBankStorage {
       { id: 'av_2', userId: 'usr_aryan', dayOfWeek: 3, startTime: '15:00', endTime: '19:00', isRecurring: true },
       { id: 'av_3', userId: 'usr_aryan', dayOfWeek: 5, startTime: '10:00', endTime: '14:00', isRecurring: true },
 
-      // Priya: Tue, Thu, Sat
+      // Priya: Tue, Thu, Mon (overlaps with Aryan!)
       { id: 'av_4', userId: 'usr_priya', dayOfWeek: 2, startTime: '11:00', endTime: '16:00', isRecurring: true },
       { id: 'av_5', userId: 'usr_priya', dayOfWeek: 4, startTime: '11:00', endTime: '16:00', isRecurring: true },
-      { id: 'av_6', userId: 'usr_priya', dayOfWeek: 1, startTime: '14:00', endTime: '17:00', isRecurring: true }, // Overlaps with Aryan Mon!
+      { id: 'av_6', userId: 'usr_priya', dayOfWeek: 1, startTime: '14:00', endTime: '17:00', isRecurring: true },
 
       // Marcus: Wed, Thu
       { id: 'av_7', userId: 'usr_marcus', dayOfWeek: 3, startTime: '16:00', endTime: '20:00', isRecurring: true },
       { id: 'av_8', userId: 'usr_marcus', dayOfWeek: 4, startTime: '14:00', endTime: '18:00', isRecurring: true },
 
-      // Elena: Mon, Wed, Fri
+      // Elena: Mon, Fri
       { id: 'av_9', userId: 'usr_elena', dayOfWeek: 1, startTime: '13:00', endTime: '17:00', isRecurring: true },
       { id: 'av_10', userId: 'usr_elena', dayOfWeek: 5, startTime: '11:00', endTime: '15:00', isRecurring: true },
 
@@ -430,7 +469,7 @@ export class TimeBankStorage {
     const disputeBookingId = 'bk_sample_disputed';
     const disputeSession: SessionBooking = {
       id: disputeBookingId,
-      requesterId: 'usr_aryan',
+      requesterId: 'usr_elena',
       helperId: 'usr_kenji',
       skillName: 'Japanese Language',
       skillCategory: 'Languages',
@@ -442,12 +481,12 @@ export class TimeBankStorage {
       createdAt: new Date(Date.now() - 24 * 3600000).toISOString(),
     };
     this.bookings.set(disputeSession.id, disputeSession);
-    this.ledger.lockEscrow(aryan, 30, disputeBookingId, 'Japanese Language');
+    this.ledger.lockEscrow(elena, 30, disputeBookingId, 'Japanese Language');
 
     const sampleDispute: Dispute = {
       id: 'disp_sample_1',
       sessionId: disputeBookingId,
-      raisedByUserId: 'usr_aryan',
+      raisedByUserId: 'usr_elena',
       againstUserId: 'usr_kenji',
       reason: 'TECHNICAL_ISSUES',
       description: 'Audio dropped out completely 10 minutes in and helper was unable to reconnect.',

@@ -202,4 +202,103 @@ describe('Cancellation Policy & Dispute Mediation', () => {
     assert.strictEqual(helper.disputeCount, 1);
     assert.strictEqual(helper.reliabilityScore, 92);
   });
+
+  it('rejects dispute filed by an unauthorized non-participant', () => {
+    const { ledger, learner, helper } = createTestSetup();
+    const booking: SessionBooking = {
+      id: 'b5',
+      requesterId: learner.id,
+      helperId: helper.id,
+      skillName: 'English Speaking',
+      skillCategory: 'Languages',
+      description: 'Practice session',
+      scheduledAt: new Date().toISOString(),
+      durationMinutes: 30,
+      creditAmount: 30,
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString(),
+    };
+
+    assert.throws(() => {
+      DisputeEngine.fileDispute(
+        booking,
+        'unauthorized_user',
+        'OFF_TOPIC',
+        'Spam',
+        '',
+        0
+      );
+    }, /Only participants of this session can file a dispute/);
+  });
+
+  it('rejects dispute filed on already cancelled session', () => {
+    const { learner, helper } = createTestSetup();
+    const booking: SessionBooking = {
+      id: 'b6',
+      requesterId: learner.id,
+      helperId: helper.id,
+      skillName: 'English Speaking',
+      skillCategory: 'Languages',
+      description: 'Practice session',
+      scheduledAt: new Date().toISOString(),
+      durationMinutes: 30,
+      creditAmount: 30,
+      status: 'CANCELLED',
+      createdAt: new Date().toISOString(),
+    };
+
+    assert.throws(() => {
+      DisputeEngine.fileDispute(
+        booking,
+        learner.id,
+        'OFF_TOPIC',
+        'Too late',
+        '',
+        0
+      );
+    }, /Cannot dispute a session that has already been cancelled/);
+  });
+
+  it('handles dismissed dispute by refunding escrow without penalty', () => {
+    const { ledger, learner, helper } = createTestSetup();
+    const booking: SessionBooking = {
+      id: 'b7',
+      requesterId: learner.id,
+      helperId: helper.id,
+      skillName: 'English Speaking',
+      skillCategory: 'Languages',
+      description: 'Practice session',
+      scheduledAt: new Date().toISOString(),
+      durationMinutes: 30,
+      creditAmount: 30,
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString(),
+    };
+
+    ledger.lockEscrow(learner, 30, booking.id, booking.skillName);
+    const dispute = DisputeEngine.fileDispute(
+      booking,
+      learner.id,
+      'POOR_QUALITY',
+      'Dispute was withdrawn',
+      '',
+      15
+    );
+
+    const resolved = DisputeEngine.resolveDispute(
+      dispute,
+      booking,
+      learner,
+      helper,
+      'DISMISSED',
+      'No merit found, returning escrow',
+      'Admin',
+      ledger
+    );
+
+    assert.strictEqual(resolved.status, 'DISMISSED');
+    assert.strictEqual(learner.credits.availableBalance, 60);
+    assert.strictEqual(learner.credits.escrowBalance, 0);
+    assert.strictEqual(booking.status, 'CANCELLED');
+  });
 });

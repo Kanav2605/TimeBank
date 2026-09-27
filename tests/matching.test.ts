@@ -86,7 +86,8 @@ describe('Matching Engine & Circular Trades', () => {
     };
 
     const cycles = MatchingEngine.findCircularTrades([aryan, marcus, priyaMod]);
-    assert.ok(cycles.length >= 1);
+    // Exactly 1 unique cycle should be reported (no duplicate cyclic permutations)
+    assert.strictEqual(cycles.length, 1);
     assert.ok(cycles[0].description.includes('Aryan'));
     assert.ok(cycles[0].description.includes('Marcus'));
     assert.ok(cycles[0].description.includes('Priya'));
