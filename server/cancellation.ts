@@ -22,11 +22,18 @@ export class CancellationEngine {
     ledger: TransactionLedger,
     currentTime: Date = new Date()
   ): CancellationResult {
-    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') {
+    if (booking.status !== 'CONFIRMED' && booking.status !== 'IN_PROGRESS') {
       throw new Error(`Cannot cancel a session with status: ${booking.status}`);
     }
 
     const scheduledTime = new Date(booking.scheduledAt);
+    const sessionEndTime = scheduledTime.getTime() + (booking.durationMinutes || 0) * 60000;
+    if (currentTime.getTime() > sessionEndTime) {
+      throw new Error(
+        'Cannot cancel a session that has already concluded. If you experienced an issue, please file a dispute.'
+      );
+    }
+
     const msUntilSession = scheduledTime.getTime() - currentTime.getTime();
     const hoursUntilSession = msUntilSession / (1000 * 60 * 60);
 

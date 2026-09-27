@@ -1,6 +1,15 @@
 import { User, SkillItem, SkillMatchRecommendation, AvailabilitySlot } from './types.js';
 
 export class MatchingEngine {
+  private static getSkillMatchRank(offered: SkillItem, needed: SkillItem): number {
+    const oName = offered.name.toLowerCase().trim();
+    const nName = needed.name.toLowerCase().trim();
+    if (oName === nName) return 3; // exact match
+    if (oName.includes(nName) || nName.includes(oName)) return 2; // substring / partial match
+    if (offered.category === needed.category) return 1; // domain / category match
+    return 0;
+  }
+
   /**
    * Calculate compatibility between learner and potential helper
    */
@@ -21,17 +30,14 @@ export class MatchingEngine {
     const reasons: string[] = [];
 
     // 1. Skill Exactness / Category match
-    const skillNameA = neededSkill.name.toLowerCase().trim();
-    const skillNameB = offeredSkill.name.toLowerCase().trim();
-
-    if (skillNameA === skillNameB) {
+    const skillRank = this.getSkillMatchRank(offeredSkill, neededSkill);
+    if (skillRank === 3) {
       score += 25;
       reasons.push(`Exact skill match for "${offeredSkill.name}"`);
-    } else if (
-      skillNameA.includes(skillNameB) ||
-      skillNameB.includes(skillNameA) ||
-      neededSkill.category === offeredSkill.category
-    ) {
+    } else if (skillRank === 2) {
+      score += 20;
+      reasons.push(`Close skill match for "${offeredSkill.name}"`);
+    } else if (skillRank === 1) {
       score += 15;
       reasons.push(`Related domain match in ${offeredSkill.category}`);
     }
@@ -40,10 +46,8 @@ export class MatchingEngine {
     let isDirectExchange = false;
     let bilateralMatchName: string | undefined;
     for (const hn of helper.skillsNeeded) {
-      const match = learner.skillsOffered.find((lo) =>
-        lo.name.toLowerCase().trim() === hn.name.toLowerCase().trim() ||
-        lo.name.toLowerCase().includes(hn.name.toLowerCase()) ||
-        hn.name.toLowerCase().includes(lo.name.toLowerCase())
+      const match = learner.skillsOffered.find(
+        (lo) => this.getSkillMatchRank(lo, hn) >= 2
       );
       if (match) {
         bilateralMatchName = match.name;
@@ -78,16 +82,22 @@ export class MatchingEngine {
       reasons.push(`Top-rated mentor (${helper.rating.toFixed(1)}/5.0 stars)`);
     }
 
-    // 4. Availability Overlap
+    // 4. Availability Overlap (parse minutes to avoid 9:00 vs 10:00 string collation errors)
     const sharedSlots: string[] = [];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const parseTime = (t: string): number => {
+      const [h, m] = t.split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
 
     for (const hSlot of helperSlots) {
-      // Find matching learner slot on same day
+      const hStart = parseTime(hSlot.startTime);
+      const hEnd = parseTime(hSlot.endTime);
       const match = learnerSlots.find((lSlot) => {
         if (lSlot.dayOfWeek !== hSlot.dayOfWeek) return false;
-        // Overlap test: startA < endB and startB < endA
-        return lSlot.startTime < hSlot.endTime && hSlot.startTime < lSlot.endTime;
+        const lStart = parseTime(lSlot.startTime);
+        const lEnd = parseTime(lSlot.endTime);
+        return lStart < hEnd && hStart < lEnd;
       });
 
       if (match) {
@@ -127,36 +137,47 @@ export class MatchingEngine {
 
     for (const neededSkill of learner.skillsNeeded) {
       for (const helper of potentialHelpers) {
-        // Find if helper offers this skill or related category
-        const offeredSkill = helper.skillsOffered.find(
-          (o) =>
-            o.name.toLowerCase().trim() === neededSkill.name.toLowerCase().trim() ||
-            o.name.toLowerCase().includes(neededSkill.name.toLowerCase()) ||
-            neededSkill.name.toLowerCase().includes(o.name.toLowerCase()) ||
-            o.category === neededSkill.category
-        );
+        // Find best offered skill based on match quality (exact > substring > category)
+        let bestOfferedSkill: SkillItem | undefined;
+        let bestRank = 0;
 
-        if (!offeredSkill) continue;
+        for (const o of helper.skillsOffered) {
+          const rank = this.getSkillMatchRank(o, neededSkill);
+          if (rank > bestRank) {
+            bestRank = rank;
+            bestOfferedSkill = o;
+          }
+        }
+
+        if (!bestOfferedSkill) continue;
 
         const helperSlots = allSlots.filter((s) => s.userId === helper.id);
         const matchResult = this.calculateMatchScore(
           learner,
           helper,
           neededSkill,
-          offeredSkill,
+          bestOfferedSkill,
           learnerSlots,
           helperSlots
         );
 
-        // Find if learner offers something helper needs
-        const matchedSkillNeeded = helper.skillsNeeded.find((hn) =>
-          learner.skillsOffered.some((lo) => lo.name.toLowerCase() === hn.name.toLowerCase())
-        );
+        // Find if learner offers something helper needs using aligned bilateral rank
+        let matchedSkillNeeded: SkillItem | undefined;
+        let bestReciprocalRank = 0;
+        for (const hn of helper.skillsNeeded) {
+          for (const lo of learner.skillsOffered) {
+            const rank = this.getSkillMatchRank(lo, hn);
+            if (rank > bestReciprocalRank && rank >= 2) {
+              bestReciprocalRank = rank;
+              matchedSkillNeeded = hn;
+            }
+          }
+        }
 
         recommendations.push({
           user: helper,
           matchType: matchResult.isDirectExchange ? 'DIRECT_EXCHANGE' : (helper.rating >= 4.8 ? 'TOP_RATED' : 'SKILL_MATCH'),
-          matchedSkillOffered: offeredSkill,
+          matchedSkillOffered: bestOfferedSkill,
           matchedSkillNeeded,
           compatibilityScore: matchResult.score,
           commonAvailability: matchResult.sharedSlots,

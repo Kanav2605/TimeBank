@@ -99,7 +99,7 @@
       ],
       "reliabilityScore": 100,
       "rating": 5,
-      "reviewCount": 1,
+      "reviewCount": 6,
       "completedSessions": 1,
       "disputeCount": 0,
       "joinedAt": "2026-08-13T16:39:30.619Z",
@@ -434,6 +434,61 @@
       "helpfulnessRating": 5,
       "comment": "Priya transformed my resume in exactly 30 minutes! Highly professional and articulate.",
       "createdAt": "2026-09-25T18:39:30.619Z"
+    },
+    {
+      "id": "rev_test_1790527293277",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_aryan",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Super helpful tutoring session!",
+      "createdAt": "2026-09-27T16:41:33.277Z"
+    },
+    {
+      "id": "rev_test_1790527359318",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_aryan",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Super helpful tutoring session!",
+      "createdAt": "2026-09-27T16:42:39.318Z"
+    },
+    {
+      "id": "rev_test_1790527604625",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_aryan",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Super helpful tutoring session!",
+      "createdAt": "2026-09-27T16:46:44.626Z"
+    },
+    {
+      "id": "rev_test_1790527621661",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_aryan",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Super helpful tutoring session!",
+      "createdAt": "2026-09-27T16:47:01.661Z"
+    },
+    {
+      "id": "rev_test_1790527730318",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_aryan",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Super helpful tutoring session!",
+      "createdAt": "2026-09-27T16:48:50.318Z"
     }
   ],
   "ledgerChain": [

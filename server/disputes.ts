@@ -17,17 +17,34 @@ export class DisputeEngine {
       throw new Error('Only participants of this session can file a dispute.');
     }
 
-    if (booking.status === 'CANCELLED') {
-      throw new Error('Cannot dispute a session that has already been cancelled.');
+    if (booking.status !== 'CONFIRMED' && booking.status !== 'IN_PROGRESS') {
+      if (booking.status === 'CANCELLED') {
+        throw new Error('Cannot dispute a session that has already been cancelled.');
+      }
+      if (booking.status === 'DISPUTED') {
+        throw new Error('A dispute has already been filed for this session.');
+      }
+      if (booking.status === 'COMPLETED') {
+        throw new Error('Cannot dispute a session that has already completed and settled.');
+      }
+      throw new Error(`Cannot dispute session with status: ${booking.status}`);
     }
 
-    if (booking.status === 'DISPUTED') {
-      throw new Error('A dispute has already been filed for this session.');
+    const validReasons: Dispute['reason'][] = [
+      'NO_SHOW',
+      'POOR_QUALITY',
+      'INCOMPLETE_TIME',
+      'OFF_TOPIC',
+      'TECHNICAL_ISSUES',
+    ];
+    if (!validReasons.includes(reason)) {
+      throw new Error(`Invalid dispute reason: ${reason}. Allowed reasons: ${validReasons.join(', ')}`);
     }
 
-    if (booking.status === 'COMPLETED') {
-      throw new Error('Cannot dispute a session that has already completed and settled.');
-    }
+    const sanitizedMinutes = Math.max(
+      0,
+      Math.min(booking.durationMinutes, Number(actualMinutesAttended) || 0)
+    );
 
     const againstUserId =
       raisedByUserId === booking.requesterId ? booking.helperId : booking.requesterId;
@@ -40,7 +57,7 @@ export class DisputeEngine {
       reason,
       description,
       evidenceNotes,
-      actualMinutesAttended,
+      actualMinutesAttended: sanitizedMinutes,
       status: 'OPEN',
       createdAt: new Date().toISOString(),
     };

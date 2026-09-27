@@ -83,6 +83,9 @@ export class TransactionLedger {
    * Grant initial welcome credits on sign up
    */
   public grantSignupBonus(user: User, amount: number = 60): LedgerEntry {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new Error(`Grant amount must be a positive integer, received: ${amount}`);
+    }
     const entry = this.appendEntry(
       'SYSTEM',
       user.id,
@@ -103,6 +106,10 @@ export class TransactionLedger {
     sessionId: string,
     skillName: string
   ): LedgerEntry {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new Error(`Escrow lock amount must be a positive integer, received: ${amount}`);
+    }
+
     if (requester.credits.availableBalance < amount) {
       throw new Error(
         `Insufficient time credits. Available: ${requester.credits.availableBalance} min, Required: ${amount} min.`
@@ -132,6 +139,10 @@ export class TransactionLedger {
     sessionId: string,
     skillName: string
   ): LedgerEntry {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new Error(`Escrow release amount must be a positive integer, received: ${amount}`);
+    }
+
     if (requester.credits.escrowBalance < amount) {
       throw new Error(`Escrow balance underflow. Escrow has ${requester.credits.escrowBalance}, releasing ${amount}`);
     }
@@ -161,6 +172,10 @@ export class TransactionLedger {
     sessionId: string,
     reason: string
   ): LedgerEntry {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new Error(`Escrow refund amount must be a positive integer, received: ${amount}`);
+    }
+
     if (requester.credits.escrowBalance < amount) {
       throw new Error(`Escrow balance underflow on refund.`);
     }
@@ -190,6 +205,17 @@ export class TransactionLedger {
     reason: string,
     type: 'LATE_CANCELLATION_FEE' | 'DISPUTE_PAYOUT'
   ): { refundEntry?: LedgerEntry; payoutEntry?: LedgerEntry } {
+    if (
+      !Number.isInteger(refundAmount) ||
+      !Number.isInteger(payoutAmount) ||
+      refundAmount < 0 ||
+      payoutAmount < 0 ||
+      refundAmount + payoutAmount <= 0
+    ) {
+      throw new Error(
+        `Split escrow amounts must be non-negative integers summing to > 0. Received refund: ${refundAmount}, payout: ${payoutAmount}`
+      );
+    }
     const total = refundAmount + payoutAmount;
     if (requester.credits.escrowBalance < total) {
       throw new Error(`Escrow balance underflow during split. Required: ${total}, Available: ${requester.credits.escrowBalance}`);

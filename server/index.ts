@@ -43,6 +43,14 @@ app.post('/api/users', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Name and email are required' });
   }
 
+  const emailLower = email.trim().toLowerCase();
+  const emailExists = Array.from(storage.users.values()).some(
+    (u) => u.email.trim().toLowerCase() === emailLower
+  );
+  if (emailExists) {
+    return res.status(409).json({ error: 'A user with this email address already exists' });
+  }
+
   const id = `usr_${Date.now()}`;
   const newUser: User = {
     id,
@@ -245,11 +253,48 @@ app.post('/api/bookings', (req: Request, res: Response) => {
   }
 
   const creditAmount = Number(durationMinutes);
+  if (!Number.isInteger(creditAmount) || creditAmount <= 0 || creditAmount > 480) {
+    return res.status(400).json({
+      error: 'durationMinutes must be a positive integer between 1 and 480 minutes',
+    });
+  }
+
+  const sessionDate = new Date(scheduledAt);
+  if (isNaN(sessionDate.getTime())) {
+    return res.status(400).json({ error: 'Invalid scheduledAt ISO date format' });
+  }
+
+  if (sessionDate.getTime() < Date.now() - 5 * 60 * 1000) {
+    return res.status(400).json({ error: 'Cannot schedule a session in the past' });
+  }
 
   if (requester.credits.availableBalance < creditAmount) {
     return res.status(400).json({
       error: `Insufficient time credits. You have ${requester.credits.availableBalance} credits available, but this session requires ${creditAmount} credits. Complete a session to earn more time credits!`,
     });
+  }
+
+  // Conflict overlap check with active sessions
+  const newStart = sessionDate.getTime();
+  const newEnd = newStart + creditAmount * 60 * 1000;
+
+  for (const b of storage.bookings.values()) {
+    if (b.status === 'CONFIRMED' || b.status === 'IN_PROGRESS') {
+      const bStart = new Date(b.scheduledAt).getTime();
+      const bEnd = bStart + (b.durationMinutes || 0) * 60 * 1000;
+      if (newStart < bEnd && bStart < newEnd) {
+        if (b.helperId === helperId || b.requesterId === helperId) {
+          return res.status(409).json({
+            error: `Schedule conflict: ${helper.name} is already booked for another session during this time window.`,
+          });
+        }
+        if (b.requesterId === requesterId || b.helperId === requesterId) {
+          return res.status(409).json({
+            error: `Schedule conflict: You already have another session booked during this time window.`,
+          });
+        }
+      }
+    }
   }
 
   const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -313,8 +358,19 @@ app.put('/api/bookings/:id/sign-off', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Booking not found' });
   }
 
-  if (booking.status === 'COMPLETED') {
-    return res.status(400).json({ error: 'Session is already completed' });
+  if (booking.status !== 'CONFIRMED' && booking.status !== 'IN_PROGRESS') {
+    if (booking.status === 'COMPLETED') {
+      return res.status(400).json({ error: 'Session is already completed' });
+    }
+    if (booking.status === 'CANCELLED') {
+      return res.status(400).json({ error: 'Cannot sign off on a cancelled session' });
+    }
+    if (booking.status === 'DISPUTED') {
+      return res.status(400).json({
+        error: 'Cannot sign off on a session under dispute. Please resolve through mediation.',
+      });
+    }
+    return res.status(400).json({ error: `Cannot sign off on session with status: ${booking.status}` });
   }
 
   const { userId, signOff } = req.body;
@@ -500,18 +556,43 @@ app.get('/api/reviews/:userId', (req: Request, res: Response) => {
 app.post('/api/reviews', (req: Request, res: Response) => {
   const { sessionId, reviewerId, revieweeId, rating, punctualityRating, helpfulnessRating, comment } = req.body;
 
-  if (!sessionId || !reviewerId || !revieweeId || !rating) {
+  if (!sessionId || !reviewerId || !revieweeId || rating === undefined) {
     return res.status(400).json({ error: 'Missing required review fields' });
   }
+
+  const booking = storage.bookings.get(sessionId);
+  if (booking) {
+    if (booking.status !== 'COMPLETED') {
+      return res.status(400).json({ error: 'Reviews can only be submitted for completed sessions' });
+    }
+    if (reviewerId !== booking.requesterId && reviewerId !== booking.helperId) {
+      return res.status(403).json({ error: 'Only participants of this session can submit reviews' });
+    }
+    const expectedReviewee = reviewerId === booking.requesterId ? booking.helperId : booking.requesterId;
+    if (revieweeId !== expectedReviewee) {
+      return res.status(400).json({ error: 'Invalid reviewee for this session' });
+    }
+  }
+
+  const alreadyReviewed = storage.reviews.some(
+    (r) => r.sessionId === sessionId && r.reviewerId === reviewerId
+  );
+  if (alreadyReviewed) {
+    return res.status(409).json({ error: 'You have already reviewed this session' });
+  }
+
+  const numericRating = Math.min(5, Math.max(1, Math.round(Number(rating))));
+  const numPunctuality = Math.min(5, Math.max(1, Math.round(Number(punctualityRating || rating))));
+  const numHelpfulness = Math.min(5, Math.max(1, Math.round(Number(helpfulnessRating || rating))));
 
   const review = {
     id: `rev_${Date.now()}`,
     sessionId,
     reviewerId,
     revieweeId,
-    rating: Number(rating),
-    punctualityRating: Number(punctualityRating || rating),
-    helpfulnessRating: Number(helpfulnessRating || rating),
+    rating: numericRating,
+    punctualityRating: numPunctuality,
+    helpfulnessRating: numHelpfulness,
     comment: comment || '',
     createdAt: new Date().toISOString(),
   };
