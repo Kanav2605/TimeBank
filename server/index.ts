@@ -9,6 +9,7 @@ import { CancellationEngine } from './cancellation.js';
 import { DisputeEngine } from './disputes.js';
 import { BadgesEngine } from './badges.js';
 import { CalendarEngine } from './calendar.js';
+import { LearningEngine } from './learning.js';
 import { SessionBooking, User } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -191,7 +192,8 @@ app.get('/api/matching/recommendations/:userId', (req: Request, res: Response) =
   const recommendations = MatchingEngine.findRecommendations(
     learner,
     allUsers,
-    storage.availability
+    storage.availability,
+    storage.boosts
   );
 
   res.json(recommendations);
@@ -671,6 +673,144 @@ app.post('/api/reviews', (req: Request, res: Response) => {
 
   storage.persist();
   res.status(201).json(review);
+});
+
+// ==========================================
+// 8.5 Learning Goals, Study Plans, Teamwork Pods & Skill Boosts
+// ==========================================
+
+// Goals (/goal)
+app.get('/api/goals', (req: Request, res: Response) => {
+  const userId = req.query.userId as string | undefined;
+  let list = storage.goals;
+  if (userId) {
+    list = list.filter((g) => g.userId === userId);
+  }
+  res.json(list);
+});
+
+app.post('/api/goals', (req: Request, res: Response) => {
+  const { userId, title, category, targetMinutes, targetDate, linkedSkill } = req.body;
+  if (!userId || !title) {
+    return res.status(400).json({ error: 'userId and title are required' });
+  }
+  const user = storage.users.get(userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const goal = LearningEngine.createGoal(userId, title, category, targetMinutes, targetDate, linkedSkill);
+  storage.goals.push(goal);
+  storage.persist();
+  res.status(201).json(goal);
+});
+
+app.patch('/api/goals/:id/progress', (req: Request, res: Response) => {
+  const goal = storage.goals.find((g) => g.id === req.params.id);
+  if (!goal) {
+    return res.status(404).json({ error: 'Goal not found' });
+  }
+  const minutes = Number(req.body.minutes) || 0;
+  LearningEngine.addGoalProgress(goal, minutes);
+  storage.persist();
+  res.json(goal);
+});
+
+// Study Plans (/plan)
+app.get('/api/plans', (req: Request, res: Response) => {
+  const userId = req.query.userId as string | undefined;
+  let list = storage.studyPlans;
+  if (userId) {
+    list = list.filter((p) => p.userId === userId);
+  }
+  res.json(list);
+});
+
+app.post('/api/plans/generate', (req: Request, res: Response) => {
+  const { userId, skillName } = req.body;
+  if (!userId) {
+    return res.status(400).json({ error: 'userId is required' });
+  }
+  const user = storage.users.get(userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const plan = LearningEngine.generateStudyPlan(user, skillName);
+  storage.studyPlans.push(plan);
+  storage.persist();
+  res.status(201).json(plan);
+});
+
+// Teamwork Pods (/teamwork-preview)
+app.get('/api/pods', (req: Request, res: Response) => {
+  res.json(storage.teamworkPods);
+});
+
+app.post('/api/pods', (req: Request, res: Response) => {
+  const { title, topic, description, category, scheduledAt, durationMinutes, maxParticipants, creatorId } = req.body;
+  if (!title || !topic || !creatorId) {
+    return res.status(400).json({ error: 'title, topic, and creatorId are required' });
+  }
+  const creator = storage.users.get(creatorId);
+  if (!creator) {
+    return res.status(404).json({ error: 'Creator user not found' });
+  }
+
+  const pod = LearningEngine.createTeamworkPod(
+    title,
+    topic,
+    description,
+    category,
+    scheduledAt,
+    durationMinutes,
+    maxParticipants,
+    creator
+  );
+  storage.teamworkPods.push(pod);
+  storage.persist();
+  res.status(201).json(pod);
+});
+
+app.post('/api/pods/:id/join', (req: Request, res: Response) => {
+  const pod = storage.teamworkPods.find((p) => p.id === req.params.id);
+  if (!pod) {
+    return res.status(404).json({ error: 'Pod not found' });
+  }
+  const { userId, role } = req.body;
+  const user = storage.users.get(userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  try {
+    LearningEngine.joinTeamworkPod(pod, user, role);
+    storage.persist();
+    res.json(pod);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Skill Boosts (/boost)
+app.get('/api/boosts', (req: Request, res: Response) => {
+  res.json(storage.boosts);
+});
+
+app.post('/api/boosts/toggle', (req: Request, res: Response) => {
+  const { userId, skillName, type } = req.body;
+  if (!userId || !skillName) {
+    return res.status(400).json({ error: 'userId and skillName are required' });
+  }
+  const user = storage.users.get(userId);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const { boosts, activeBoost } = LearningEngine.toggleBoost(storage.boosts, userId, skillName, type || 'OFFERED');
+  storage.boosts = boosts;
+  storage.persist();
+  res.json({ success: true, activeBoost, allBoosts: storage.boosts });
 });
 
 // ==========================================

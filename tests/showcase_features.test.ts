@@ -2,7 +2,9 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { BadgesEngine } from '../server/badges.js';
 import { CalendarEngine } from '../server/calendar.js';
-import { User, SessionBooking } from '../server/types.js';
+import { LearningEngine } from '../server/learning.js';
+import { MatchingEngine } from '../server/matching.js';
+import { User, SessionBooking, SkillBoost } from '../server/types.js';
 import { TransactionLedger } from '../server/ledger.js';
 
 describe('Showcase Features: Reputation Badges & Accolades', () => {
@@ -196,5 +198,229 @@ describe('Showcase Features: Cryptographic Ledger Audit Export', () => {
     const entries = ledger.getEntries();
     assert.equal(entries[2].previousHash, entries[1].hash);
     assert.equal(entries[1].previousHash, entries[0].hash);
+  });
+});
+
+describe('Showcase Features: Learning Goals & Progress (/goal)', () => {
+  it('creates a learning goal with valid attributes and clamps minimum duration', () => {
+    const goal = LearningEngine.createGoal(
+      'usr_aryan',
+      'Master Java Streams & Concurrency',
+      'Tech',
+      10, // below 15 min minimum
+      '2026-11-01',
+      'Java Debugging'
+    );
+
+    assert.equal(goal.userId, 'usr_aryan');
+    assert.equal(goal.targetMinutes, 15); // clamped to min 15
+    assert.equal(goal.completedMinutes, 0);
+    assert.equal(goal.status, 'IN_PROGRESS');
+  });
+
+  it('progresses goal and marks as COMPLETED when target minutes are achieved', () => {
+    const goal = LearningEngine.createGoal(
+      'usr_aryan',
+      'English Fluency for Interviews',
+      'Languages',
+      60,
+      '2026-11-01'
+    );
+
+    LearningEngine.addGoalProgress(goal, 30);
+    assert.equal(goal.completedMinutes, 30);
+    assert.equal(goal.status, 'IN_PROGRESS');
+
+    LearningEngine.addGoalProgress(goal, 35);
+    assert.equal(goal.completedMinutes, 65);
+    assert.equal(goal.status, 'COMPLETED');
+  });
+});
+
+describe('Showcase Features: Study & Exchange Roadmaps (/plan)', () => {
+  it('generates structured 3-phase study roadmap for learner skill', () => {
+    const user: User = {
+      id: 'usr_aryan',
+      name: 'Aryan Sharma',
+      email: 'aryan@campus.edu',
+      avatar: '',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [],
+      skillsNeeded: [{ id: 's1', name: 'English Speaking Practice', category: 'Languages' }],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const plan = LearningEngine.generateStudyPlan(user, 'English Speaking Practice');
+    assert.ok(plan.id.startsWith('plan_'));
+    assert.equal(plan.userId, 'usr_aryan');
+    assert.equal(plan.milestones.length, 3);
+    assert.ok(plan.title.includes('English Speaking Practice'));
+    assert.equal(plan.milestones[0].completed, false);
+  });
+});
+
+describe('Showcase Features: Teamwork Study Pods (/teamwork-preview)', () => {
+  it('creates an open study pod with the creator as Leader', () => {
+    const creator: User = {
+      id: 'usr_aryan',
+      name: 'Aryan Sharma',
+      email: 'aryan@campus.edu',
+      avatar: 'aryan.png',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [],
+      skillsNeeded: [],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const pod = LearningEngine.createTeamworkPod(
+      'System Architecture Pod',
+      'Java & Distributed Systems',
+      'Collaborative capstone review',
+      'Tech',
+      '2026-10-15T18:00:00Z',
+      60,
+      3,
+      creator
+    );
+
+    assert.equal(pod.members.length, 1);
+    assert.equal(pod.members[0].userId, 'usr_aryan');
+    assert.equal(pod.members[0].role, 'Leader');
+    assert.equal(pod.status, 'OPEN');
+  });
+
+  it('allows students to join pod and transitions status to IN_PROGRESS when full', () => {
+    const creator: User = {
+      id: 'usr_aryan',
+      name: 'Aryan Sharma',
+      email: 'aryan@campus.edu',
+      avatar: 'aryan.png',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [],
+      skillsNeeded: [],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const peer: User = {
+      id: 'usr_marcus',
+      name: 'Marcus Chen',
+      email: 'marcus@campus.edu',
+      avatar: 'marcus.png',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [],
+      skillsNeeded: [],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const pod = LearningEngine.createTeamworkPod(
+      'Mini Pair Pod',
+      'Python',
+      'Quick sync',
+      'Tech',
+      '2026-10-15T18:00:00Z',
+      30,
+      2, // Max 2
+      creator
+    );
+
+    LearningEngine.joinTeamworkPod(pod, peer, 'Contributor');
+    assert.equal(pod.members.length, 2);
+    assert.equal(pod.status, 'IN_PROGRESS'); // Now full!
+
+    // Rejecting already joined member
+    assert.throws(() => LearningEngine.joinTeamworkPod(pod, peer), /already joined/);
+  });
+});
+
+describe('Showcase Features: Skill Boosts & Match Acceleration (/boost)', () => {
+  it('toggles skill boost and accelerates match score in MatchingEngine', () => {
+    const boosts: SkillBoost[] = [];
+    const result = LearningEngine.toggleBoost(boosts, 'usr_aryan', 'Java Debugging', 'OFFERED');
+    assert.equal(result.boosts.length, 1);
+    assert.equal(result.activeBoost.active, true);
+
+    const helper: User = {
+      id: 'usr_aryan',
+      name: 'Aryan Sharma',
+      email: 'aryan@campus.edu',
+      avatar: '',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [{ id: 's1', name: 'Java Debugging', category: 'Tech' }],
+      skillsNeeded: [],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const learner: User = {
+      id: 'usr_student',
+      name: 'Curious Learner',
+      email: 'student@campus.edu',
+      avatar: '',
+      bio: '',
+      credits: { availableBalance: 60, escrowBalance: 0, totalEarned: 0, totalSpent: 0 },
+      skillsOffered: [],
+      skillsNeeded: [{ id: 's2', name: 'Java Debugging', category: 'Tech' }],
+      reliabilityScore: 100,
+      rating: 5,
+      reviewCount: 0,
+      completedSessions: 0,
+      disputeCount: 0,
+      joinedAt: new Date().toISOString(),
+      role: 'student',
+    };
+
+    const recommendationsWithoutBoost = MatchingEngine.findRecommendations(
+      learner,
+      [helper],
+      [],
+      [] // No active boosts
+    );
+
+    const recommendationsWithBoost = MatchingEngine.findRecommendations(
+      learner,
+      [helper],
+      [],
+      boosts // Active boost present
+    );
+
+    assert.ok(recommendationsWithBoost.length > 0);
+    assert.ok(recommendationsWithBoost[0].compatibilityScore >= recommendationsWithoutBoost[0].compatibilityScore);
+    assert.ok(
+      recommendationsWithBoost[0].reasons.some((r) => r.includes('Active Campus Boost'))
+    );
   });
 });

@@ -7,6 +7,10 @@ import {
   Dispute,
   Review,
   LedgerEntry,
+  LearningGoal,
+  StudyPlan,
+  TeamworkPod,
+  SkillBoost,
 } from './types.js';
 import { TransactionLedger } from './ledger.js';
 
@@ -17,6 +21,10 @@ interface StorageData {
   disputes: Dispute[];
   reviews: Review[];
   ledgerChain: LedgerEntry[];
+  goals?: LearningGoal[];
+  studyPlans?: StudyPlan[];
+  teamworkPods?: TeamworkPod[];
+  boosts?: SkillBoost[];
 }
 
 export class TimeBankStorage {
@@ -26,6 +34,10 @@ export class TimeBankStorage {
   public bookings: Map<string, SessionBooking> = new Map();
   public disputes: Map<string, Dispute> = new Map();
   public reviews: Review[] = [];
+  public goals: LearningGoal[] = [];
+  public studyPlans: StudyPlan[] = [];
+  public teamworkPods: TeamworkPod[] = [];
+  public boosts: SkillBoost[] = [];
   public ledger: TransactionLedger;
 
   constructor(filePath?: string) {
@@ -50,6 +62,10 @@ export class TimeBankStorage {
         this.bookings = new Map(data.bookings.map((b) => [b.id, b]));
         this.disputes = new Map(data.disputes.map((d) => [d.id, d]));
         this.reviews = data.reviews || [];
+        this.goals = data.goals || [];
+        this.studyPlans = data.studyPlans || [];
+        this.teamworkPods = data.teamworkPods || [];
+        this.boosts = data.boosts || [];
         this.ledger = new TransactionLedger(data.ledgerChain);
         return;
       } catch (err) {
@@ -91,6 +107,10 @@ export class TimeBankStorage {
           bookings: Array.from(this.bookings.values()),
           disputes: Array.from(this.disputes.values()),
           reviews: this.reviews,
+          goals: this.goals,
+          studyPlans: this.studyPlans,
+          teamworkPods: this.teamworkPods,
+          boosts: this.boosts,
           ledgerChain: this.ledger.getEntries(),
         };
 
@@ -509,6 +529,104 @@ export class TimeBankStorage {
       helpfulnessRating: 5,
       comment: 'Priya transformed my resume in exactly 30 minutes! Highly professional and articulate.',
       createdAt: new Date(Date.now() - 46 * 3600000).toISOString(),
+    });
+
+    // 7. Seed Goals, Study Plan, Teamwork Pod, and Boost
+    this.goals.push({
+      id: 'goal_aryan_english',
+      userId: 'usr_aryan',
+      title: 'Master Technical English for System Design Interviews',
+      category: 'Languages',
+      targetMinutes: 120,
+      completedMinutes: 30,
+      status: 'IN_PROGRESS',
+      targetDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+      linkedSkill: 'English Speaking Practice',
+      createdAt: new Date().toISOString(),
+    });
+
+    this.studyPlans.push({
+      id: 'plan_aryan_english',
+      userId: 'usr_aryan',
+      title: 'English Speaking Practice Mastery Roadmap',
+      description: 'Structured peer-to-peer study and reciprocal exchange plan for English Speaking Practice.',
+      targetCompletionDate: new Date(Date.now() + 21 * 86400000).toISOString().split('T')[0],
+      milestones: [
+        {
+          id: 'ms_1',
+          title: 'Phase 1: Conversational Fluency & Technical Vocabulary',
+          targetMinutes: 30,
+          completed: true,
+          recommendedSkill: 'English Speaking Practice',
+          recommendedPeerId: 'usr_priya',
+          recommendedPeerName: 'Priya Patel',
+          notes: 'Completed session with Priya reviewing system design terminology.',
+        },
+        {
+          id: 'ms_2',
+          title: 'Phase 2: Live Mock Interview Pitching (PPT + Speaking)',
+          targetMinutes: 45,
+          completed: false,
+          recommendedSkill: 'English Speaking Practice',
+          recommendedPeerId: 'usr_priya',
+          recommendedPeerName: 'Priya Patel',
+          notes: 'Present slide deck in English with live constructive feedback.',
+        },
+        {
+          id: 'ms_3',
+          title: 'Phase 3: Cross-Disciplinary Exchange & Panel Discussion',
+          targetMinutes: 45,
+          completed: false,
+          recommendedSkill: 'English Speaking Practice',
+          notes: 'Participate in multidisciplinary campus exchange session.',
+        },
+      ],
+      createdAt: new Date().toISOString(),
+    });
+
+    this.teamworkPods.push({
+      id: 'pod_tech_interviews',
+      title: 'Full-Stack & System Design Peer Exchange Pod',
+      topic: 'Java, Distributed Architectures & Capstone Presentations',
+      description: 'Collaborative student study pod where engineers and designers exchange code walkthroughs for presentation reviews.',
+      category: 'Tech',
+      scheduledAt: new Date(Date.now() + 36 * 3600000).toISOString(),
+      durationMinutes: 60,
+      maxParticipants: 4,
+      members: [
+        {
+          userId: 'usr_aryan',
+          name: 'Aryan Sharma',
+          avatar: aryan.avatar,
+          role: 'Leader',
+          pledgedMinutes: 60,
+        },
+        {
+          userId: 'usr_marcus',
+          name: 'Marcus Chen',
+          avatar: marcus.avatar,
+          role: 'Contributor',
+          pledgedMinutes: 60,
+        },
+      ],
+      agenda: [
+        'Sync on system design bottlenecks & Java concurrency',
+        'Slide deck design critique for capstone demo day',
+        'Reciprocal peer verification and sign-offs',
+      ],
+      status: 'OPEN',
+      createdAt: new Date().toISOString(),
+    });
+
+    this.boosts.push({
+      id: 'boost_aryan_ppt',
+      userId: 'usr_aryan',
+      skillName: 'PPT Design',
+      type: 'OFFERED',
+      boostLevel: 1,
+      expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+      active: true,
+      createdAt: new Date().toISOString(),
     });
   }
 }

@@ -1,4 +1,4 @@
-import { User, SkillItem, SkillMatchRecommendation, AvailabilitySlot } from './types.js';
+import { User, SkillItem, SkillMatchRecommendation, AvailabilitySlot, SkillBoost } from './types.js';
 
 export class MatchingEngine {
   private static getSkillMatchRank(offered: SkillItem, needed: SkillItem): number {
@@ -19,7 +19,8 @@ export class MatchingEngine {
     neededSkill: SkillItem,
     offeredSkill: SkillItem,
     learnerSlots: AvailabilitySlot[],
-    helperSlots: AvailabilitySlot[]
+    helperSlots: AvailabilitySlot[],
+    boosts: SkillBoost[] = []
   ): {
     score: number;
     reasons: string[];
@@ -110,6 +111,23 @@ export class MatchingEngine {
       reasons.push(`Schedule compatibility: ${sharedSlots.length} overlapping time windows found`);
     }
 
+    // 5. Skill Boost Bonus
+    const activeHelperBoost = boosts.find(
+      (b) => b.active && b.userId === helper.id && b.skillName.toLowerCase() === offeredSkill.name.toLowerCase()
+    );
+    if (activeHelperBoost) {
+      score += 20;
+      reasons.push(`⚡ Active Campus Boost: Priority mentor matching accelerated for "${offeredSkill.name}"`);
+    }
+
+    const activeLearnerBoost = boosts.find(
+      (b) => b.active && b.userId === learner.id && b.skillName.toLowerCase() === neededSkill.name.toLowerCase()
+    );
+    if (activeLearnerBoost) {
+      score += 15;
+      reasons.push(`⚡ Active Campus Boost: Urgent learner request prioritized for "${neededSkill.name}"`);
+    }
+
     // Cap score at 100
     const finalScore = Math.min(100, Math.max(0, Math.round(score)));
 
@@ -127,7 +145,8 @@ export class MatchingEngine {
   public static findRecommendations(
     learner: User,
     allUsers: User[],
-    allSlots: AvailabilitySlot[]
+    allSlots: AvailabilitySlot[],
+    boosts: SkillBoost[] = []
   ): SkillMatchRecommendation[] {
     const recommendations: SkillMatchRecommendation[] = [];
     const learnerSlots = allSlots.filter((s) => s.userId === learner.id);
@@ -158,7 +177,8 @@ export class MatchingEngine {
           neededSkill,
           bestOfferedSkill,
           learnerSlots,
-          helperSlots
+          helperSlots,
+          boosts
         );
 
         // Find if learner offers something helper needs using aligned bilateral rank

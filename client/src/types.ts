@@ -144,6 +144,75 @@ export interface CircularTradeCycle {
   description: string;
 }
 
+export interface LearningGoal {
+  id: string;
+  userId: string;
+  title: string;
+  category: string;
+  targetMinutes: number;
+  completedMinutes: number;
+  status: 'IN_PROGRESS' | 'COMPLETED';
+  targetDate: string;
+  linkedSkill?: string;
+  createdAt: string;
+}
+
+export interface PlanMilestone {
+  id: string;
+  title: string;
+  targetMinutes: number;
+  completed: boolean;
+  recommendedSkill: string;
+  recommendedPeerId?: string;
+  recommendedPeerName?: string;
+  notes?: string;
+}
+
+export interface StudyPlan {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  targetCompletionDate: string;
+  milestones: PlanMilestone[];
+  createdAt: string;
+}
+
+export interface TeamworkPodMember {
+  userId: string;
+  name: string;
+  avatar: string;
+  role: 'Leader' | 'Contributor' | 'Learner';
+  pledgedMinutes: number;
+}
+
+export interface TeamworkPod {
+  id: string;
+  title: string;
+  topic: string;
+  description: string;
+  category: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  maxParticipants: number;
+  members: TeamworkPodMember[];
+  agenda: string[];
+  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED';
+  createdAt: string;
+}
+
+export interface SkillBoost {
+  id: string;
+  userId: string;
+  skillName: string;
+  type: 'OFFERED' | 'NEEDED';
+  boostLevel: number;
+  expiresAt: string;
+  active: boolean;
+  createdAt: string;
+}
+
+
 export interface Review {
   id: string;
   sessionId: string;

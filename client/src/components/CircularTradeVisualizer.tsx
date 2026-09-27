@@ -48,10 +48,15 @@ export const CircularTradeVisualizer: React.FC<CircularTradeVisualizerProps> = (
     );
   };
 
-  // Node positions on circle (r=90 around cx=150, cy=140)
+  // Dynamic layout calculation for arbitrary n-gon loops (3, 4, 5+ steps)
   const cx = 160;
   const cy = 135;
-  const radius = 95;
+  const radius = numSteps >= 5 ? 84 : numSteps === 4 ? 88 : 95;
+  const nodeRadius = numSteps >= 5 ? 20 : 23;
+  const clipRadius = numSteps >= 5 ? 17 : 20;
+  const pullFactor = numSteps >= 5 ? 0.16 : numSteps === 4 ? 0.22 : 0.28;
+  const labelBoxWidth = numSteps >= 5 ? 64 : 76;
+  const labelBoxHalfWidth = labelBoxWidth / 2;
 
   const nodePositions = steps.map((_, i) => {
     // Start at top (-PI/2) and distribute evenly clockwise
@@ -180,21 +185,20 @@ export const CircularTradeVisualizer: React.FC<CircularTradeVisualizerProps> = (
             const endNode = nodePositions[nextIdx];
             const isStepActive = activeStep === idx;
 
-            // Compute curved control point towards center
+            // Compute curved control point towards center using adaptive pullFactor
             const midX = (startNode.x + endNode.x) / 2;
             const midY = (startNode.y + endNode.y) / 2;
-            const pullFactor = 0.28;
             const cpX = midX + (cx - midX) * pullFactor;
             const cpY = midY + (cy - midY) * pullFactor;
 
-            // Offset start & end so arrows don't collide with node circle (radius 22)
+            // Offset start & end so arrows don't collide with node circle
             const angleStart = Math.atan2(cpY - startNode.y, cpX - startNode.x);
-            const pathStartX = startNode.x + 24 * Math.cos(angleStart);
-            const pathStartY = startNode.y + 24 * Math.sin(angleStart);
+            const pathStartX = startNode.x + (nodeRadius + 2) * Math.cos(angleStart);
+            const pathStartY = startNode.y + (nodeRadius + 2) * Math.sin(angleStart);
 
             const angleEnd = Math.atan2(endNode.y - cpY, endNode.x - cpX);
-            const pathEndX = endNode.x - 26 * Math.cos(angleEnd);
-            const pathEndY = endNode.y - 26 * Math.sin(angleEnd);
+            const pathEndX = endNode.x - (nodeRadius + 4) * Math.cos(angleEnd);
+            const pathEndY = endNode.y - (nodeRadius + 4) * Math.sin(angleEnd);
 
             const d = `M ${pathStartX} ${pathStartY} Q ${cpX} ${cpY} ${pathEndX} ${pathEndY}`;
 
@@ -269,7 +273,7 @@ export const CircularTradeVisualizer: React.FC<CircularTradeVisualizerProps> = (
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r="23"
+                  r={nodeRadius}
                   fill="#0f172a"
                   stroke={isHighlighted ? '#10b981' : '#4338ca'}
                   strokeWidth={isHighlighted ? '2.5' : '1.5'}
@@ -277,22 +281,22 @@ export const CircularTradeVisualizer: React.FC<CircularTradeVisualizerProps> = (
 
                 {/* Avatar clip */}
                 <clipPath id={`avatar-clip-${cycleIndex}-${idx}`}>
-                  <circle cx={pos.x} cy={pos.y} r="20" />
+                  <circle cx={pos.x} cy={pos.y} r={clipRadius} />
                 </clipPath>
                 <image
                   href={avatarUrl}
-                  x={pos.x - 20}
-                  y={pos.y - 20}
-                  width="40"
-                  height="40"
+                  x={pos.x - clipRadius}
+                  y={pos.y - clipRadius}
+                  width={clipRadius * 2}
+                  height={clipRadius * 2}
                   clipPath={`url(#avatar-clip-${cycleIndex}-${idx})`}
                 />
 
                 {/* Name Label */}
                 <rect
-                  x={pos.x - 38}
-                  y={pos.y + 26}
-                  width="76"
+                  x={pos.x - labelBoxHalfWidth}
+                  y={pos.y + nodeRadius + 3}
+                  width={labelBoxWidth}
                   height="16"
                   rx="4"
                   fill="#0f172a"
@@ -301,7 +305,7 @@ export const CircularTradeVisualizer: React.FC<CircularTradeVisualizerProps> = (
                 />
                 <text
                   x={pos.x}
-                  y={pos.y + 37}
+                  y={pos.y + nodeRadius + 14}
                   textAnchor="middle"
                   fill="#f8fafc"
                   fontSize="8.5"
