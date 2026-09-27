@@ -557,10 +557,96 @@
       "createdAt": "2026-09-27T18:13:02.194Z"
     }
   ],
-  "goals": [],
-  "studyPlans": [],
-  "teamworkPods": [],
-  "boosts": [],
+  "goals": [
+    {
+      "id": "goal_1790532895681_l7zi",
+      "userId": "usr_aryan",
+      "title": "Master Technical English for System Design Interviews",
+      "category": "Languages",
+      "targetMinutes": 120,
+      "completedMinutes": 0,
+      "status": "IN_PROGRESS",
+      "targetDate": "2026-11-15",
+      "linkedSkill": "English Speaking Practice",
+      "createdAt": "2026-09-27T18:14:55.681Z"
+    }
+  ],
+  "studyPlans": [
+    {
+      "id": "plan_1790532901822_45or",
+      "userId": "usr_aryan",
+      "title": "English Speaking Practice Mastery Roadmap",
+      "description": "Structured peer-to-peer study and reciprocal exchange plan for English Speaking Practice.",
+      "targetCompletionDate": "2026-10-18",
+      "milestones": [
+        {
+          "id": "ms_1790532901822_1",
+          "title": "Phase 1: English Speaking Practice Fundamentals & Core Architecture",
+          "targetMinutes": 30,
+          "completed": false,
+          "recommendedSkill": "English Speaking Practice",
+          "notes": "Interactive setup, fundamentals, syntax, and conceptual walkthrough."
+        },
+        {
+          "id": "ms_1790532901822_2",
+          "title": "Phase 2: Hands-on Practice & Guided Project Pairing",
+          "targetMinutes": 45,
+          "completed": false,
+          "recommendedSkill": "English Speaking Practice",
+          "notes": "Pair program and work through exercises or real codebases."
+        },
+        {
+          "id": "ms_1790532901822_3",
+          "title": "Phase 3: Peer Code Review, Q&A & Retrospective",
+          "targetMinutes": 30,
+          "completed": false,
+          "recommendedSkill": "English Speaking Practice",
+          "notes": "Review code quality, architecture patterns, and next steps."
+        }
+      ],
+      "createdAt": "2026-09-27T18:15:01.822Z"
+    }
+  ],
+  "teamworkPods": [
+    {
+      "id": "pod_1790532909086_bqjm",
+      "title": "Full-Stack & System Design Peer Exchange Pod",
+      "topic": "Java, Distributed Architectures & Pitch Decks",
+      "description": "Collaborative student study pod where engineers and designers exchange code walkthroughs for presentation reviews.",
+      "category": "Tech",
+      "scheduledAt": "2026-10-05T18:00:00Z",
+      "durationMinutes": 60,
+      "maxParticipants": 4,
+      "members": [
+        {
+          "userId": "usr_aryan",
+          "name": "Aryan Sharma",
+          "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+          "role": "Leader",
+          "pledgedMinutes": 60
+        }
+      ],
+      "agenda": [
+        "Sync on objectives & deliverables for Java, Distributed Architectures & Pitch Decks",
+        "Collaborative hands-on work & pair reviews",
+        "Summary notes & reciprocal peer sign-offs"
+      ],
+      "status": "OPEN",
+      "createdAt": "2026-09-27T18:15:09.087Z"
+    }
+  ],
+  "boosts": [
+    {
+      "id": "boost_1790532915118_d67d",
+      "userId": "usr_aryan",
+      "skillName": "PPT Design",
+      "type": "OFFERED",
+      "boostLevel": 1,
+      "expiresAt": "2026-10-04T18:15:15.118Z",
+      "active": true,
+      "createdAt": "2026-09-27T18:15:15.118Z"
+    }
+  ],
   "ledgerChain": [
     {
       "id": "tx_genesis",
