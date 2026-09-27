@@ -1,0 +1,38 @@
+{
+  "name": "timebank",
+  "version": "1.0.0",
+  "description": "TimeBank - Trade Time Instead of Money. A decentralized peer-to-peer time-credit economy platform for students.",
+  "main": "server/index.ts",
+  "scripts": {
+    "start": "tsx server/index.ts",
+    "server": "tsx watch server/index.ts",
+    "client": "npm --prefix client run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build:client": "npm --prefix client run build",
+    "build": "npm run build:client",
+    "test": "node --test tests/*.test.js || tsx --test tests/*.test.ts"
+  },
+  "keywords": [
+    "timebank",
+    "time-banking",
+    "skill-exchange",
+    "peer-to-peer",
+    "ledger",
+    "matching-engine"
+  ],
+  "author": "Kanav2605",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

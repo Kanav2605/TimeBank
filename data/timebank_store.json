@@ -1,0 +1,558 @@
+{
+  "users": [
+    {
+      "id": "usr_aryan",
+      "name": "Aryan Sharma",
+      "email": "aryan@campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
+      "bio": "CS Sophomore @ Tech Institute. Passionate about Java systems, concurrency, and creating crisp pitch deck slides.",
+      "university": "State University of Tech",
+      "major": "Computer Science",
+      "credits": {
+        "availableBalance": 90,
+        "escrowBalance": 30,
+        "totalEarned": 60,
+        "totalSpent": 0
+      },
+      "skillsOffered": [
+        {
+          "id": "sk_1",
+          "name": "Java Debugging",
+          "category": "Tech",
+          "proficiency": "Advanced",
+          "description": "OOP, Streams, Spring Boot basics, memory leak debugging, bug fixing.",
+          "endorsements": 14
+        },
+        {
+          "id": "sk_2",
+          "name": "PPT Design",
+          "category": "Design",
+          "proficiency": "Expert",
+          "description": "Modern deck styling, clean typography, executive pitch presentations.",
+          "endorsements": 19
+        }
+      ],
+      "skillsNeeded": [
+        {
+          "id": "sk_3",
+          "name": "English Speaking Practice",
+          "category": "Languages",
+          "proficiency": "Intermediate",
+          "description": "Conversational fluency and technical interview speaking drills."
+        }
+      ],
+      "reliabilityScore": 98,
+      "rating": 4.9,
+      "reviewCount": 16,
+      "completedSessions": 8,
+      "disputeCount": 0,
+      "joinedAt": "2026-08-28T16:22:47.129Z",
+      "role": "student"
+    },
+    {
+      "id": "usr_priya",
+      "name": "Priya Patel",
+      "email": "priya@campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "bio": "Literature & Linguistics Senior. Debating club captain. Happy to help peers with English fluency and resume wording.",
+      "university": "National Arts & Science College",
+      "major": "Linguistics & English",
+      "credits": {
+        "availableBalance": 120,
+        "escrowBalance": 0,
+        "totalEarned": 120,
+        "totalSpent": 45
+      },
+      "skillsOffered": [
+        {
+          "id": "sk_4",
+          "name": "English Speaking Practice",
+          "category": "Languages",
+          "proficiency": "Expert",
+          "description": "Accent neutralization, confident presentation speech, viva prep.",
+          "endorsements": 22
+        },
+        {
+          "id": "sk_5",
+          "name": "Resume Review",
+          "category": "Career",
+          "proficiency": "Advanced",
+          "description": "ATS optimization, impactful action verbs, cover letter polish.",
+          "endorsements": 11
+        }
+      ],
+      "skillsNeeded": [
+        {
+          "id": "sk_6",
+          "name": "Java Debugging",
+          "category": "Tech",
+          "proficiency": "Beginner",
+          "description": "Need help understanding object inheritance and Collections framework for CS101."
+        }
+      ],
+      "reliabilityScore": 100,
+      "rating": 5,
+      "reviewCount": 24,
+      "completedSessions": 12,
+      "disputeCount": 0,
+      "joinedAt": "2026-08-13T16:22:47.129Z",
+      "role": "student"
+    },
+    {
+      "id": "usr_marcus",
+      "name": "Marcus Chen",
+      "email": "marcus@campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "bio": "Data Science junior. Machine learning algorithms, pandas, pytorch. Terrible at designing slides!",
+      "university": "State University of Tech",
+      "major": "Data Science",
+      "credits": {
+        "availableBalance": 0,
+        "escrowBalance": 30,
+        "totalEarned": 60,
+        "totalSpent": 60
+      },
+      "skillsOffered": [
+        {
+          "id": "sk_7",
+          "name": "Python & Machine Learning",
+          "category": "Tech",
+          "proficiency": "Advanced",
+          "description": "Pandas, NumPy, Scikit-Learn pipelines, exploratory data analysis.",
+          "endorsements": 17
+        }
+      ],
+      "skillsNeeded": [
+        {
+          "id": "sk_8",
+          "name": "PPT Design",
+          "category": "Design",
+          "proficiency": "Beginner",
+          "description": "Need help making my capstone ML project slides look sleek and visual."
+        }
+      ],
+      "reliabilityScore": 94,
+      "rating": 4.8,
+      "reviewCount": 10,
+      "completedSessions": 5,
+      "disputeCount": 0,
+      "joinedAt": "2026-09-07T16:22:47.129Z",
+      "role": "student"
+    },
+    {
+      "id": "usr_elena",
+      "name": "Elena Rostova",
+      "email": "elena@campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "bio": "Design student & freelance product designer. Figma components, auto-layout, wireframing.",
+      "university": "Design Academy",
+      "major": "Interaction Design",
+      "credits": {
+        "availableBalance": 180,
+        "escrowBalance": 0,
+        "totalEarned": 120,
+        "totalSpent": 30
+      },
+      "skillsOffered": [
+        {
+          "id": "sk_9",
+          "name": "UI/UX & Figma Design",
+          "category": "Design",
+          "proficiency": "Expert",
+          "description": "Figma prototypes, design systems, UI heuristics, usability critique.",
+          "endorsements": 29
+        }
+      ],
+      "skillsNeeded": [
+        {
+          "id": "sk_10",
+          "name": "Calculus & Math",
+          "category": "Academics",
+          "proficiency": "Beginner",
+          "description": "Multivariable calculus integration and linear algebra review."
+        }
+      ],
+      "reliabilityScore": 97,
+      "rating": 4.9,
+      "reviewCount": 19,
+      "completedSessions": 9,
+      "disputeCount": 0,
+      "joinedAt": "2026-07-29T16:22:47.129Z",
+      "role": "student"
+    },
+    {
+      "id": "usr_kenji",
+      "name": "Kenji Takahashi",
+      "email": "kenji@campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      "bio": "Exchange student. Japanese JLPT N1 native tutor. Data structures & dynamic programming enthusiast.",
+      "university": "State University of Tech",
+      "major": "Software Engineering",
+      "credits": {
+        "availableBalance": 80,
+        "escrowBalance": 0,
+        "totalEarned": 40,
+        "totalSpent": 0
+      },
+      "skillsOffered": [
+        {
+          "id": "sk_11",
+          "name": "Japanese Language",
+          "category": "Languages",
+          "proficiency": "Expert",
+          "description": "Conversational Japanese, Kanji fundamentals, JLPT exam prep.",
+          "endorsements": 12
+        },
+        {
+          "id": "sk_12",
+          "name": "Algorithms & LeetCode",
+          "category": "Tech",
+          "proficiency": "Advanced",
+          "description": "Graph algorithms, dynamic programming, technical interview mocks.",
+          "endorsements": 15
+        }
+      ],
+      "skillsNeeded": [
+        {
+          "id": "sk_13",
+          "name": "Web Development & React",
+          "category": "Tech",
+          "proficiency": "Intermediate",
+          "description": "Modern front-end state management and CSS layout tips."
+        }
+      ],
+      "reliabilityScore": 96,
+      "rating": 4.9,
+      "reviewCount": 8,
+      "completedSessions": 4,
+      "disputeCount": 0,
+      "joinedAt": "2026-09-12T16:22:47.129Z",
+      "role": "student"
+    },
+    {
+      "id": "usr_admin",
+      "name": "Campus TimeBank Mediator",
+      "email": "admin@timebank.campus.edu",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "bio": "TimeBank community mediator and transaction ledger auditor.",
+      "credits": {
+        "availableBalance": 1000,
+        "escrowBalance": 0,
+        "totalEarned": 0,
+        "totalSpent": 0
+      },
+      "skillsOffered": [],
+      "skillsNeeded": [],
+      "reliabilityScore": 100,
+      "rating": 5,
+      "reviewCount": 0,
+      "completedSessions": 0,
+      "disputeCount": 0,
+      "joinedAt": "2026-06-19T16:22:47.129Z",
+      "role": "admin"
+    }
+  ],
+  "availability": [
+    {
+      "id": "av_1",
+      "userId": "usr_aryan",
+      "dayOfWeek": 1,
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_2",
+      "userId": "usr_aryan",
+      "dayOfWeek": 3,
+      "startTime": "15:00",
+      "endTime": "19:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_3",
+      "userId": "usr_aryan",
+      "dayOfWeek": 5,
+      "startTime": "10:00",
+      "endTime": "14:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_4",
+      "userId": "usr_priya",
+      "dayOfWeek": 2,
+      "startTime": "11:00",
+      "endTime": "16:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_5",
+      "userId": "usr_priya",
+      "dayOfWeek": 4,
+      "startTime": "11:00",
+      "endTime": "16:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_6",
+      "userId": "usr_priya",
+      "dayOfWeek": 1,
+      "startTime": "14:00",
+      "endTime": "17:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_7",
+      "userId": "usr_marcus",
+      "dayOfWeek": 3,
+      "startTime": "16:00",
+      "endTime": "20:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_8",
+      "userId": "usr_marcus",
+      "dayOfWeek": 4,
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_9",
+      "userId": "usr_elena",
+      "dayOfWeek": 1,
+      "startTime": "13:00",
+      "endTime": "17:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_10",
+      "userId": "usr_elena",
+      "dayOfWeek": 5,
+      "startTime": "11:00",
+      "endTime": "15:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_11",
+      "userId": "usr_kenji",
+      "dayOfWeek": 2,
+      "startTime": "10:00",
+      "endTime": "15:00",
+      "isRecurring": true
+    },
+    {
+      "id": "av_12",
+      "userId": "usr_kenji",
+      "dayOfWeek": 6,
+      "startTime": "13:00",
+      "endTime": "18:00",
+      "isRecurring": true
+    }
+  ],
+  "bookings": [
+    {
+      "id": "bk_sample_1",
+      "requesterId": "usr_marcus",
+      "helperId": "usr_priya",
+      "skillName": "Resume Review",
+      "skillCategory": "Career",
+      "description": "Review my data scientist resume bullet points and fix grammar.",
+      "scheduledAt": "2026-09-25T16:22:47.130Z",
+      "durationMinutes": 30,
+      "creditAmount": 30,
+      "status": "COMPLETED",
+      "meetingNotes": "Fixed action verbs for XGBoost project and restructured education section.",
+      "topicsChecked": [
+        "ATS layout check",
+        "Action verbs quantification",
+        "Summary review"
+      ],
+      "requesterSignedOff": true,
+      "helperSignedOff": true,
+      "createdAt": "2026-09-24T16:22:47.130Z",
+      "completedAt": "2026-09-25T17:22:47.130Z"
+    },
+    {
+      "id": "bk_sample_2",
+      "requesterId": "usr_marcus",
+      "helperId": "usr_aryan",
+      "skillName": "PPT Design",
+      "skillCategory": "Design",
+      "description": "Help formatting my machine learning capstone pitch presentation.",
+      "scheduledAt": "2026-09-28T16:22:47.130Z",
+      "durationMinutes": 30,
+      "creditAmount": 30,
+      "status": "CONFIRMED",
+      "topicsChecked": [],
+      "createdAt": "2026-09-27T16:22:47.130Z"
+    },
+    {
+      "id": "bk_sample_disputed",
+      "requesterId": "usr_aryan",
+      "helperId": "usr_kenji",
+      "skillName": "Japanese Language",
+      "skillCategory": "Languages",
+      "description": "Beginner Hiragana & Travel Japanese pronunciation.",
+      "scheduledAt": "2026-09-27T11:22:47.130Z",
+      "durationMinutes": 30,
+      "creditAmount": 30,
+      "status": "DISPUTED",
+      "createdAt": "2026-09-26T16:22:47.130Z",
+      "disputeId": "disp_sample_1"
+    }
+  ],
+  "disputes": [
+    {
+      "id": "disp_sample_1",
+      "sessionId": "bk_sample_disputed",
+      "raisedByUserId": "usr_aryan",
+      "againstUserId": "usr_kenji",
+      "reason": "TECHNICAL_ISSUES",
+      "description": "Audio dropped out completely 10 minutes in and helper was unable to reconnect.",
+      "evidenceNotes": "Tried reconnecting for 15 minutes, chat logs indicate persistent microphone failure.",
+      "actualMinutesAttended": 10,
+      "status": "OPEN",
+      "createdAt": "2026-09-27T12:22:47.130Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev_1",
+      "sessionId": "bk_sample_1",
+      "reviewerId": "usr_marcus",
+      "revieweeId": "usr_priya",
+      "rating": 5,
+      "punctualityRating": 5,
+      "helpfulnessRating": 5,
+      "comment": "Priya transformed my resume in exactly 30 minutes! Highly professional and articulate.",
+      "createdAt": "2026-09-25T18:22:47.130Z"
+    }
+  ],
+  "ledgerChain": [
+    {
+      "id": "tx_genesis",
+      "index": 0,
+      "timestamp": "2026-09-27T16:22:47.122Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "GENESIS",
+      "amount": 0,
+      "type": "SIGNUP_GRANT",
+      "reason": "TimeBank Genesis Block: Time is the universal currency of learning",
+      "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "eab6af2b158107c7926e9cfcf516484e9066fd2c2540e1119bad395d5a089056"
+    },
+    {
+      "id": "tx_1790526167129_xitb5yq",
+      "index": 1,
+      "timestamp": "2026-09-27T16:22:47.129Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "usr_aryan",
+      "amount": 60,
+      "type": "SIGNUP_GRANT",
+      "reason": "Welcome to TimeBank: 60 min starter time credits granted to Aryan Sharma",
+      "previousHash": "eab6af2b158107c7926e9cfcf516484e9066fd2c2540e1119bad395d5a089056",
+      "hash": "d28978f7f54d55d78c598f30efd5f5a66d963372762c133682418faa126b5773"
+    },
+    {
+      "id": "tx_1790526167129_3h69k11",
+      "index": 2,
+      "timestamp": "2026-09-27T16:22:47.129Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "usr_priya",
+      "amount": 45,
+      "type": "SIGNUP_GRANT",
+      "reason": "Welcome to TimeBank: 45 min starter time credits granted to Priya Patel",
+      "previousHash": "d28978f7f54d55d78c598f30efd5f5a66d963372762c133682418faa126b5773",
+      "hash": "c6b19666554f7151ff1e5c3985cc81303ba2d7600231a996ce364cf2e8c67002"
+    },
+    {
+      "id": "tx_1790526167129_fiblmuj",
+      "index": 3,
+      "timestamp": "2026-09-27T16:22:47.129Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "usr_marcus",
+      "amount": 30,
+      "type": "SIGNUP_GRANT",
+      "reason": "Welcome to TimeBank: 30 min starter time credits granted to Marcus Chen",
+      "previousHash": "c6b19666554f7151ff1e5c3985cc81303ba2d7600231a996ce364cf2e8c67002",
+      "hash": "237c6a549823fd1f54e0460111235795797484af783db07eb9a8c49a50b9efc5"
+    },
+    {
+      "id": "tx_1790526167129_dlfun9k",
+      "index": 4,
+      "timestamp": "2026-09-27T16:22:47.129Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "usr_elena",
+      "amount": 90,
+      "type": "SIGNUP_GRANT",
+      "reason": "Welcome to TimeBank: 90 min starter time credits granted to Elena Rostova",
+      "previousHash": "237c6a549823fd1f54e0460111235795797484af783db07eb9a8c49a50b9efc5",
+      "hash": "9b79107733b945c8fe7ab485efde29fd511b9deeb8d319f11f282f98db285c47"
+    },
+    {
+      "id": "tx_1790526167130_z4f38ap",
+      "index": 5,
+      "timestamp": "2026-09-27T16:22:47.130Z",
+      "fromUserId": "SYSTEM",
+      "toUserId": "usr_kenji",
+      "amount": 40,
+      "type": "SIGNUP_GRANT",
+      "reason": "Welcome to TimeBank: 40 min starter time credits granted to Kenji Takahashi",
+      "previousHash": "9b79107733b945c8fe7ab485efde29fd511b9deeb8d319f11f282f98db285c47",
+      "hash": "9c51a3c82d1709ae4c31dd768c9765aade7a52b16dda370634b492586ede999d"
+    },
+    {
+      "id": "tx_1790526167130_13of4fc",
+      "index": 6,
+      "timestamp": "2026-09-27T16:22:47.130Z",
+      "fromUserId": "usr_marcus",
+      "toUserId": "ESCROW",
+      "amount": 30,
+      "type": "ESCROW_LOCK",
+      "sessionId": "bk_sample_1",
+      "reason": "Escrow hold for 30 min session: \"Resume Review\"",
+      "previousHash": "9c51a3c82d1709ae4c31dd768c9765aade7a52b16dda370634b492586ede999d",
+      "hash": "47064ada11080fa63b75d25f82a3c870a8b97c837f91c9f2dec222c3454f59ca"
+    },
+    {
+      "id": "tx_1790526167130_vftfu3x",
+      "index": 7,
+      "timestamp": "2026-09-27T16:22:47.130Z",
+      "fromUserId": "ESCROW",
+      "toUserId": "usr_priya",
+      "amount": 30,
+      "type": "ESCROW_RELEASE",
+      "sessionId": "bk_sample_1",
+      "reason": "Credits earned for completing 30 min session: \"Resume Review\"",
+      "previousHash": "47064ada11080fa63b75d25f82a3c870a8b97c837f91c9f2dec222c3454f59ca",
+      "hash": "eb821e797be3286280883935a5902199b233c4cf0906263302eacb1d19a5cd17"
+    },
+    {
+      "id": "tx_1790526167130_ptnrzy4",
+      "index": 8,
+      "timestamp": "2026-09-27T16:22:47.130Z",
+      "fromUserId": "usr_marcus",
+      "toUserId": "ESCROW",
+      "amount": 30,
+      "type": "ESCROW_LOCK",
+      "sessionId": "bk_sample_2",
+      "reason": "Escrow hold for 30 min session: \"PPT Design\"",
+      "previousHash": "eb821e797be3286280883935a5902199b233c4cf0906263302eacb1d19a5cd17",
+      "hash": "487362422a663d3a14246f33eb36a22c857ae574f7f6d7c0ef5057fde16f8312"
+    },
+    {
+      "id": "tx_1790526167130_kybkes8",
+      "index": 9,
+      "timestamp": "2026-09-27T16:22:47.130Z",
+      "fromUserId": "usr_aryan",
+      "toUserId": "ESCROW",
+      "amount": 30,
+      "type": "ESCROW_LOCK",
+      "sessionId": "bk_sample_disputed",
+      "reason": "Escrow hold for 30 min session: \"Japanese Language\"",
+      "previousHash": "487362422a663d3a14246f33eb36a22c857ae574f7f6d7c0ef5057fde16f8312",
+      "hash": "08c36973759e993e2b7cdcd2b6896902bbecc4df9a8e716753293b494e8f4b7c"
+    }
+  ]
+}
