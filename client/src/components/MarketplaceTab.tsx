@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { User, SkillItem, AvailabilitySlot, Review } from '../types';
 import { Search, Star, ShieldCheck, Clock, ArrowRight, UserPlus, Filter, Calendar, MessageSquare } from 'lucide-react';
+import { ReputationBadges } from './ReputationBadges';
+import { audioEngine } from '../utils/audio';
 
 interface MarketplaceTabProps {
   currentUser: User;
@@ -112,6 +114,7 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
       );
       setTargetHelper(null);
       setTargetSkill(null);
+      audioEngine.playSessionChime();
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to book session');
     } finally {
@@ -205,6 +208,9 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
                     </span>
                     <span>•</span>
                     <span className="text-blue-400">{user.reliabilityScore}% reliable</span>
+                  </div>
+                  <div className="mt-1">
+                    <ReputationBadges user={user} mode="chips" />
                   </div>
                 </div>
               </div>

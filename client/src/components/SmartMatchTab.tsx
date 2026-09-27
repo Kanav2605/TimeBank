@@ -10,9 +10,13 @@ import {
   ArrowRight,
   TrendingUp,
 } from 'lucide-react';
+import { CircularTradeVisualizer } from './CircularTradeVisualizer';
+import { ReputationBadges } from './ReputationBadges';
+import { audioEngine } from '../utils/audio';
 
 interface SmartMatchTabProps {
   currentUser: User;
+  allUsers?: User[];
   onBookSession: (
     helperId: string,
     skillName: string,
@@ -25,6 +29,7 @@ interface SmartMatchTabProps {
 
 export const SmartMatchTab: React.FC<SmartMatchTabProps> = ({
   currentUser,
+  allUsers = [],
   onBookSession,
 }) => {
   const [recommendations, setRecommendations] = useState<SkillMatchRecommendation[]>([]);
@@ -101,6 +106,7 @@ export const SmartMatchTab: React.FC<SmartMatchTabProps> = ({
         scheduledDateTime,
         bookingNotes
       );
+      audioEngine.playSessionChime();
       setSelectedRec(null);
     } catch (err: any) {
       setBookingError(err.message || 'Failed to book session');
@@ -132,34 +138,18 @@ export const SmartMatchTab: React.FC<SmartMatchTabProps> = ({
             <Repeat className="w-5 h-5 text-indigo-400 animate-spin" style={{ animationDuration: '8s' }} />
             <h2 className="text-lg font-bold text-white">Multi-Way Circular Time Trades Detected</h2>
           </div>
-          <p className="text-xs text-slate-300 mb-4 max-w-3xl leading-relaxed">
-            Unlike traditional barter where two students must want each other&apos;s exact skill, TimeBank allows 3-way or multi-way time loops. Nobody pays money, everyone learns!
+          <p className="text-xs text-slate-300 mb-6 max-w-3xl leading-relaxed">
+            Unlike traditional barter where two students must want each other&apos;s exact skill, TimeBank allows 3-way or multi-way time loops. Nobody pays money, everyone learns! Below, simulate the multi-party exchange and verify the zero net credit drift.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {circularTrades.slice(0, 2).map((item, idx) => (
-              <div
+              <CircularTradeVisualizer
                 key={idx}
-                className="p-4 rounded-xl bg-slate-900/90 border border-indigo-500/20 flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <span className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider block">
-                    Circular Loop #{idx + 1}
-                  </span>
-                  <div className="flex flex-col space-y-2">
-                    {item.cycle.map((step, sIdx) => (
-                      <div key={sIdx} className="flex items-center space-x-2 text-xs">
-                        <span className="font-bold text-emerald-400">{step.giver}</span>
-                        <span className="text-slate-500">&rarr; teaches {step.skill} to &rarr;</span>
-                        <span className="font-bold text-teal-300">{step.receiver}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 font-mono">
-                  {item.description}
-                </div>
-              </div>
+                cycleData={item}
+                cycleIndex={idx}
+                allUsers={allUsers}
+              />
             ))}
           </div>
         </div>
@@ -207,6 +197,9 @@ export const SmartMatchTab: React.FC<SmartMatchTabProps> = ({
                         <p className="text-xs text-slate-400">
                           {rec.user.major} • {rec.user.university}
                         </p>
+                        <div className="mt-1.5">
+                          <ReputationBadges user={rec.user} mode="chips" />
+                        </div>
                       </div>
                     </div>
 

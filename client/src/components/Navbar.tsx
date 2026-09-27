@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from '../types';
-import { Clock, ShieldCheck, UserCheck, Sparkles, AlertCircle } from 'lucide-react';
+import { Clock, ShieldCheck, UserCheck, Sparkles, AlertCircle, Volume2, VolumeX } from 'lucide-react';
+import { audioEngine } from '../utils/audio';
 
 interface NavbarProps {
   currentUser: User | null;
@@ -19,6 +20,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   openDisputesCount,
 }) => {
+  const [audioActive, setAudioActive] = useState(() => audioEngine.isEnabled());
+
+  const handleToggleAudio = () => {
+    const next = !audioActive;
+    audioEngine.setEnabled(next);
+    setAudioActive(next);
+    if (next) {
+      audioEngine.playCreditPing();
+    }
+  };
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -136,6 +147,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
 
+            {/* Audio Feedback Toggle */}
+            <button
+              onClick={handleToggleAudio}
+              className={`p-2 rounded-lg border text-xs font-semibold flex items-center transition-all ${
+                audioActive
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              title={audioActive ? 'Audio Soundscape Enabled (Click to Mute)' : 'Audio Muted (Click to Enable)'}
+              aria-label="Toggle Sound Effects"
+            >
+              {audioActive ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+
             {/* Switch User Dropdown */}
             <div className="relative group">
               <select
@@ -143,7 +168,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 value={currentUser?.id || ''}
                 onChange={(e) => {
                   const selected = allUsers.find((u) => u.id === e.target.value);
-                  if (selected) onSelectUser(selected);
+                  if (selected) {
+                    audioEngine.playTaskPop();
+                    onSelectUser(selected);
+                  }
                 }}
                 className="bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
               >

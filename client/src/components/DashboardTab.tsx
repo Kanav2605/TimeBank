@@ -15,6 +15,8 @@ import {
   TrendingUp,
   Trash2,
 } from 'lucide-react';
+import { ReputationBadges } from './ReputationBadges';
+import { audioEngine } from '../utils/audio';
 
 interface DashboardTabProps {
   currentUser: User;
@@ -75,6 +77,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       });
       if (res.ok) {
         setShowAddAvail(false);
+        audioEngine.playTaskPop();
         fetchMyAvailability();
       }
     } catch (err) {
@@ -86,6 +89,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     try {
       const res = await fetch(`/api/availability/${slotId}`, { method: 'DELETE' });
       if (res.ok) {
+        audioEngine.playTaskPop();
         setMyAvailability((prev) => prev.filter((s) => s.id !== slotId));
       }
     } catch (err) {
@@ -113,6 +117,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     };
 
     onAddSkill(currentUser.id, showAddModal!, skill);
+    audioEngine.playCreditPing();
     setShowAddModal(null);
     setNewSkillName('');
     setNewSkillDesc('');
@@ -264,6 +269,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <p className="text-[11px] text-slate-400 mt-1">{currentUser.reviewCount} peer reviews</p>
           </div>
         </div>
+      </div>
+
+      {/* Reputation Badges & Campus Honors Showcase */}
+      <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-700/60 shadow-lg">
+        <ReputationBadges user={currentUser} mode="full" />
       </div>
 
       {/* Active Upcoming Sessions Banner */}

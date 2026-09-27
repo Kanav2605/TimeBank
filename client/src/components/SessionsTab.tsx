@@ -11,10 +11,24 @@ import {
   XCircle,
   HelpCircle,
   Calendar,
+  CalendarDays,
   Shield,
   ArrowRight,
   Star,
+  Download,
+  ExternalLink,
+  List,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import { ReputationBadges } from './ReputationBadges';
+import { audioEngine } from '../utils/audio';
+import {
+  generateSessionIcs,
+  generateBulkIcs,
+  downloadIcsFile,
+  getGoogleCalendarUrl,
+} from '../utils/calendar';
 
 interface SessionsTabProps {
   currentUser: User;
@@ -65,30 +79,35 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
 
+  // View mode and calendar controls
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [currentWeekOffset, setCurrentWeekOffset] = useState<number>(0);
+
   // Filter bookings involving currentUser
   const myBookings = bookings.filter(
     (b) => b.requesterId === currentUser.id || b.helperId === currentUser.id
   );
 
+  const handleExportSingleIcs = (booking: SessionBooking, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const isLearner = booking.requesterId === currentUser.id;
+    const peerId = isLearner ? booking.helperId : booking.requesterId;
+    const peer = allUsers.find((u) => u.id === peerId);
+    const peerName = peer?.name || 'Campus Student';
+    const icsContent = generateSessionIcs(booking, peerName);
+    downloadIcsFile(icsContent, `TimeBank-${booking.skillName.replace(/\s+/g, '_')}`);
+    audioEngine.playTaskPop();
+  };
+
+  const handleExportAllIcs = () => {
+    const icsContent = generateBulkIcs(myBookings, allUsers, currentUser.id);
+    downloadIcsFile(icsContent, `TimeBank-${currentUser.name.replace(/\s+/g, '_')}-Schedule`);
+    audioEngine.playCreditPing();
+  };
+
   const playSessionChime = () => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.0);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.0);
-    } catch {
-      // Audio playback fallback
-    }
+    audioEngine.playTimerGong();
   };
 
   useEffect(() => {
@@ -105,6 +124,7 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
   }, [isTimerRunning, timerSeconds]);
 
   const handleOpenWorkspace = (booking: SessionBooking) => {
+    audioEngine.playTaskPop();
     setSelectedBooking(booking);
     setTimerSeconds(booking.durationMinutes * 60);
     setIsTimerRunning(false);
@@ -113,6 +133,7 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
   };
 
   const handleToggleChecklist = (item: string) => {
+    audioEngine.playTaskPop();
     if (checklist.includes(item)) {
       setChecklist(checklist.filter((i) => i !== item));
     } else {
@@ -152,7 +173,7 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
       if (res.ok) {
         const updated = await res.json();
         setSelectedBooking(updated);
-        playSessionChime();
+        audioEngine.playCreditPing();
         onRefreshBookings();
         onRefreshUser();
       }
@@ -276,97 +297,341 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
     }
   };
 
+  // Helper for computing 7 days around current week offset
+  const getWeekDays = () => {
+    const today = new Date();
+    const current = new Date(today);
+    current.setDate(today.getDate() + currentWeekOffset * 7);
+
+    const day = current.getDay();
+    const diffToMonday = (day + 6) % 7;
+    const monday = new Date(current);
+    monday.setDate(current.getDate() - diffToMonday);
+
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      weekDays.push(d);
+    }
+    return weekDays;
+  };
+
+  const weekDays = getWeekDays();
+
+  const filteredBookings = myBookings.filter((b) => {
+    if (statusFilter === 'ALL') return true;
+    return b.status === statusFilter;
+  });
+
+  const selectedPeerId = selectedBooking
+    ? selectedBooking.requesterId === currentUser.id
+      ? selectedBooking.helperId
+      : selectedBooking.requesterId
+    : null;
+  const selectedPeer = allUsers.find((u) => u.id === selectedPeerId);
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Peer Sessions & Collaboration Room
-        </h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Manage your booked sessions, enter active workspaces with real-time timers, and confirm credit transfers.
-        </p>
+      {/* Header with View Switcher & iCal Bulk Export */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
+            <Clock className="w-4 h-4" />
+            <span>Interactive Scheduling & Collaboration</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Peer Sessions & Workspace
+          </h1>
+          <p className="text-slate-400 text-sm mt-0.5">
+            Coordinate upcoming peer sessions, sync to iCalendar/Google, and settle time credits in the collaborative room.
+          </p>
+        </div>
+
+        {/* View Toggle & Bulk Export */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="p-1 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center space-x-1">
+            <button
+              onClick={() => {
+                setViewMode('list');
+                audioEngine.playTaskPop();
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-slate-800 text-emerald-400 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>List View</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('calendar');
+                audioEngine.playTaskPop();
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-slate-800 text-emerald-400 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>Interactive Calendar</span>
+            </button>
+          </div>
+
+          <button
+            onClick={handleExportAllIcs}
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-sm"
+            title="Download complete .ics calendar file"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Export Schedule (.ics)</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main layout: Bookings list vs Active Workspace */}
+      {/* Main layout: Bookings list/calendar vs Active Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Bookings List (1 col) */}
+        {/* Bookings / Calendar (1 col on list, full or 1 col) */}
         <div className="lg:col-span-1 space-y-4">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-            <span>My Sessions ({myBookings.length})</span>
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+              <span>My Sessions ({filteredBookings.length})</span>
+            </h2>
 
-          {myBookings.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-slate-800/30 border border-slate-700/60 text-center text-slate-400 text-xs">
-              No sessions booked yet. Book help through Smart Match or Marketplace!
+            {/* Filter pills */}
+            <div className="flex items-center space-x-1 text-[11px]">
+              {['ALL', 'CONFIRMED', 'COMPLETED'].map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatusFilter(st)}
+                  className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
+                    statusFilter === st
+                      ? 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {viewMode === 'calendar' ? (
+            /* Interactive Weekly Calendar Schedule */
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 shadow-lg space-y-3">
+              {/* Calendar Navigation */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <span className="text-xs font-bold text-white flex items-center space-x-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>
+                    {weekDays[0].toLocaleDateString('default', { month: 'short', day: 'numeric' })} –{' '}
+                    {weekDays[6].toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </span>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => setCurrentWeekOffset((p) => p - 1)}
+                    className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+                    title="Previous Week"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentWeekOffset(0)}
+                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setCurrentWeekOffset((p) => p + 1)}
+                    className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+                    title="Next Week"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Day columns */}
+              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                {weekDays.map((day, dIdx) => {
+                  const dayStr = day.toDateString();
+                  const isToday = new Date().toDateString() === dayStr;
+                  const daySessions = filteredBookings.filter(
+                    (b) => new Date(b.scheduledAt).toDateString() === dayStr
+                  );
+
+                  return (
+                    <div
+                      key={dIdx}
+                      className={`p-2.5 rounded-xl border transition-all ${
+                        isToday
+                          ? 'bg-emerald-950/20 border-emerald-500/40'
+                          : 'bg-slate-800/30 border-slate-800/80'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-slate-200">
+                          {day.toLocaleDateString('default', { weekday: 'short' })},{' '}
+                          <span className={isToday ? 'text-emerald-400 font-extrabold' : 'text-slate-400'}>
+                            {day.getDate()}
+                          </span>
+                        </span>
+                        {isToday && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Today
+                          </span>
+                        )}
+                      </div>
+
+                      {daySessions.length === 0 ? (
+                        <p className="text-[10px] text-slate-600 italic">No sessions scheduled</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {daySessions.map((b) => {
+                            const isLearner = b.requesterId === currentUser.id;
+                            const peerId = isLearner ? b.helperId : b.requesterId;
+                            const peer = allUsers.find((u) => u.id === peerId);
+                            const isSelected = selectedBooking?.id === b.id;
+
+                            return (
+                              <div
+                                key={b.id}
+                                onClick={() => handleOpenWorkspace(b)}
+                                className={`p-2 rounded-lg border text-xs cursor-pointer transition-all ${
+                                  isSelected
+                                    ? 'bg-emerald-900/40 border-emerald-500 text-white shadow-sm'
+                                    : 'bg-slate-900/80 border-slate-700/60 hover:border-slate-500 text-slate-200'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold truncate max-w-[120px] text-[11px]">
+                                    {b.skillName}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-emerald-400">
+                                    {new Date(b.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between mt-1 text-[10px] text-slate-400">
+                                  <span>{isLearner ? `Tutor: ${peer?.name?.split(' ')[0]}` : `Student: ${peer?.name?.split(' ')[0]}`}</span>
+                                  <span>{b.durationMinutes}m</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {myBookings.map((b) => {
-                const isLearner = b.requesterId === currentUser.id;
-                const peerId = isLearner ? b.helperId : b.requesterId;
-                const peer = allUsers.find((u) => u.id === peerId);
-                const isSelected = selectedBooking?.id === b.id;
+            /* Card List View */
+            myBookings.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-slate-800/30 border border-slate-700/60 text-center text-slate-400 text-xs">
+                No sessions booked yet. Book help through Smart Match or Marketplace!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredBookings.map((b) => {
+                  const isLearner = b.requesterId === currentUser.id;
+                  const peerId = isLearner ? b.helperId : b.requesterId;
+                  const peer = allUsers.find((u) => u.id === peerId);
+                  const isSelected = selectedBooking?.id === b.id;
 
-                let statusBadge = (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Confirmed
-                  </span>
-                );
-                if (b.status === 'COMPLETED') {
-                  statusBadge = (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      Completed
+                  let statusBadge = (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      Confirmed
                     </span>
                   );
-                } else if (b.status === 'CANCELLED') {
-                  statusBadge = (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
-                      Cancelled
-                    </span>
-                  );
-                } else if (b.status === 'DISPUTED') {
-                  statusBadge = (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      Disputed
-                    </span>
-                  );
-                }
-
-                return (
-                  <div
-                    key={b.id}
-                    onClick={() => handleOpenWorkspace(b)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-slate-800 border-emerald-500 shadow-md'
-                        : 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-white truncate max-w-[140px]">
-                        {b.skillName}
+                  if (b.status === 'COMPLETED') {
+                    statusBadge = (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        Completed
                       </span>
-                      {statusBadge}
-                    </div>
+                    );
+                  } else if (b.status === 'CANCELLED') {
+                    statusBadge = (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                        Cancelled
+                      </span>
+                    );
+                  } else if (b.status === 'DISPUTED') {
+                    statusBadge = (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        Disputed
+                      </span>
+                    );
+                  }
 
-                    <div className="flex items-center space-x-2 text-xs text-slate-300">
-                      <img
-                        src={peer?.avatar}
-                        alt={peer?.name}
-                        className="w-5 h-5 rounded-full object-cover"
-                      />
-                      <span>{isLearner ? `Tutor: ${peer?.name}` : `Student: ${peer?.name}`}</span>
-                    </div>
+                  return (
+                    <div
+                      key={b.id}
+                      onClick={() => handleOpenWorkspace(b)}
+                      className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-800 border-emerald-500 shadow-md'
+                          : 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-white truncate max-w-[140px]">
+                          {b.skillName}
+                        </span>
+                        {statusBadge}
+                      </div>
 
-                    <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                      <span>{b.durationMinutes} mins ({b.creditAmount} cr)</span>
-                      <span>{new Date(b.scheduledAt).toLocaleDateString()}</span>
+                      <div className="flex items-center space-x-2 text-xs text-slate-300">
+                        <img
+                          src={peer?.avatar}
+                          alt={peer?.name}
+                          className="w-5 h-5 rounded-full object-cover"
+                        />
+                        <span>{isLearner ? `Tutor: ${peer?.name}` : `Student: ${peer?.name}`}</span>
+                      </div>
+
+                      {peer && (
+                        <div className="mt-1.5">
+                          <ReputationBadges user={peer} mode="chips" />
+                        </div>
+                      )}
+
+                      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <span>{b.durationMinutes} mins ({b.creditAmount} cr)</span>
+                        <span>{new Date(b.scheduledAt).toLocaleDateString()}</span>
+                      </div>
+
+                      {/* Quick Export Actions */}
+                      <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-end space-x-2">
+                        <button
+                          onClick={(e) => handleExportSingleIcs(b, e)}
+                          className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1"
+                          title="Download .ics event"
+                        >
+                          <Download className="w-2.5 h-2.5 text-emerald-400" />
+                          <span>.ics</span>
+                        </button>
+                        <a
+                          href={getGoogleCalendarUrl(b, peer?.name || 'Student')}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-2 py-0.5 rounded text-[10px] bg-slate-900 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1"
+                          title="Google Calendar"
+                        >
+                          <ExternalLink className="w-2.5 h-2.5 text-teal-400" />
+                          <span>GCal</span>
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )
           )}
         </div>
 
@@ -375,7 +640,7 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
           {selectedBooking ? (
             <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700/80 shadow-xl space-y-6">
               {/* Workspace Header */}
-              <div className="flex items-start justify-between border-b border-slate-700/60 pb-5">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-700/60 pb-5">
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -388,28 +653,54 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">
                     {selectedBooking.requesterId === currentUser.id
-                      ? `Learning session with ${allUsers.find((u) => u.id === selectedBooking.helperId)?.name}`
-                      : `Mentoring ${allUsers.find((u) => u.id === selectedBooking.requesterId)?.name}`}
+                      ? `Learning session with ${selectedPeer?.name}`
+                      : `Mentoring ${selectedPeer?.name}`}
                   </p>
+                  {selectedPeer && (
+                    <div className="mt-2">
+                      <ReputationBadges user={selectedPeer} mode="chips" />
+                    </div>
+                  )}
                 </div>
 
-                {/* Session Actions (Cancel / Dispute) */}
-                {selectedBooking.status === 'CONFIRMED' && (
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => setShowCancelModal(true)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => setShowDisputeModal(true)}
-                      className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-semibold border border-amber-500/30 transition-colors"
-                    >
-                      Report Issue
-                    </button>
-                  </div>
-                )}
+                {/* Calendar Exports and Actions */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => handleExportSingleIcs(selectedBooking)}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center space-x-1.5 transition-colors"
+                    title="Export iCalendar (.ics)"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Export .ics</span>
+                  </button>
+                  <a
+                    href={getGoogleCalendarUrl(selectedBooking, selectedPeer?.name || 'Student')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center space-x-1.5 transition-colors"
+                    title="Add to Google Calendar"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Google Cal</span>
+                  </a>
+
+                  {selectedBooking.status === 'CONFIRMED' && (
+                    <>
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => setShowDisputeModal(true)}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-semibold border border-amber-500/30 transition-colors"
+                      >
+                        Report Issue
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Live Session Countdown Timer */}

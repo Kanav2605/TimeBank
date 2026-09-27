@@ -8,6 +8,7 @@ import { SessionsTab } from './components/SessionsTab';
 import { LedgerTab } from './components/LedgerTab';
 import { AdminDisputesTab } from './components/AdminDisputesTab';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { audioEngine } from './utils/audio';
 
 export const App: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -56,6 +57,7 @@ export const App: React.FC = () => {
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
+    audioEngine.playNotification();
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
@@ -225,6 +227,7 @@ export const App: React.FC = () => {
         {currentUser && activeTab === 'smart-match' && (
           <SmartMatchTab
             currentUser={currentUser}
+            allUsers={allUsers}
             onBookSession={handleBookSession}
           />
         )}

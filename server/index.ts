@@ -7,6 +7,8 @@ import { TimeBankStorage } from './storage.js';
 import { MatchingEngine } from './matching.js';
 import { CancellationEngine } from './cancellation.js';
 import { DisputeEngine } from './disputes.js';
+import { BadgesEngine } from './badges.js';
+import { CalendarEngine } from './calendar.js';
 import { SessionBooking, User } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +37,15 @@ app.get('/api/users/:id', (req: Request, res: Response) => {
     return res.status(404).json({ error: 'User not found' });
   }
   res.json(user);
+});
+
+app.get('/api/users/:id/badges', (req: Request, res: Response) => {
+  const user = storage.users.get(req.params.id);
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  const badges = BadgesEngine.computeBadges(user);
+  res.json(badges);
 });
 
 app.post('/api/users', (req: Request, res: Response) => {
@@ -144,6 +155,28 @@ app.get('/api/ledger/user/:id', (req: Request, res: Response) => {
   res.json([...entries].reverse());
 });
 
+app.get('/api/ledger/export/csv', (req: Request, res: Response) => {
+  const entries = storage.ledger.getEntries();
+  const headers = 'Block,Timestamp,Type,FromUser,ToUser,AmountMinutes,Reason,PreviousHash,Hash';
+  const rows = entries.map((e) =>
+    [
+      e.index,
+      `"${e.timestamp}"`,
+      `"${e.type}"`,
+      `"${e.fromUserId}"`,
+      `"${e.toUserId}"`,
+      e.amount,
+      `"${(e.reason || '').replace(/"/g, '""')}"`,
+      `"${e.previousHash}"`,
+      `"${e.hash}"`,
+    ].join(',')
+  );
+  const csvContent = [headers, ...rows].join('\r\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="TimeBank-Ledger-Audit.csv"');
+  res.send(csvContent);
+});
+
 // ==========================================
 // 3. Matching Engine & Circular Trades
 // ==========================================
@@ -232,6 +265,34 @@ app.get('/api/bookings', (req: Request, res: Response) => {
   bookings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   res.json(bookings);
+});
+
+app.get('/api/bookings/:id/ical', (req: Request, res: Response) => {
+  const booking = storage.bookings.get(req.params.id);
+  if (!booking) {
+    return res.status(404).json({ error: 'Booking not found' });
+  }
+
+  const helper = storage.users.get(booking.helperId);
+  const requester = storage.users.get(booking.requesterId);
+  const peerName = helper?.name || requester?.name || 'Campus Student';
+
+  const ics = CalendarEngine.generateSessionIcs(booking, peerName);
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="TimeBank-${booking.id}.ics"`);
+  res.send(ics);
+});
+
+app.get('/api/bookings/user/:userId/ical', (req: Request, res: Response) => {
+  const userId = req.params.userId;
+  const userBookings = Array.from(storage.bookings.values()).filter(
+    (b) => b.requesterId === userId || b.helperId === userId
+  );
+
+  const ics = CalendarEngine.generateUserScheduleIcs(userBookings, storage.users, userId);
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="TimeBank-Schedule-${userId}.ics"`);
+  res.send(ics);
 });
 
 app.post('/api/bookings', (req: Request, res: Response) => {
